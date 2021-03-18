@@ -121,10 +121,16 @@ class AutoReactionCommand(Command):
             cls.display_error(message, "Utilisateur introuvable")
             return
 
+        # Param 2 missing
+        if len(command_params) == 1:
+            reactions = Database().get_auto_reactions(user.id)
+            cls.reply(message, "%s a %s réaction(s) automatique(s) : %s" % (user.name, len(reactions), " ".join(reactions)))
+            return
+
         # Param 2 : Emoji or "stop" (to stop our emoji on target user)
         if command_params[1] == "stop":
             if Database.remove_auto_reaction(message.author.id, user.id):
-                cls.reply(message, "Réaction automatique retirée !")
+                cls.reply(message, "Réaction automatique retirée de %s !" % user.name)
             else:
                 cls.reply(message, "Il n'y a rien à faire.")
         else:
@@ -135,7 +141,7 @@ class AutoReactionCommand(Command):
                 return
 
             if Database.add_auto_reaction(message.author.id, user.id, emoji):
-                cls.reply(message, "Réaction automatique ajoutée à %s !" % user.name)
+                cls.reply(message, "Réaction automatique %s ajoutée à %s !" % (emoji, user.name))
             else:
                 cls.reply(message, "Il n'y a rien à faire.")
 
