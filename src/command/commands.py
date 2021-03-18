@@ -1,9 +1,9 @@
 import asyncio
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import List, Dict, TypeVar
+from typing import List, Dict, Callable
 
-from discord import Message, Client
+from discord import Message, Client, User
 
 from database.database import Database
 from utils.parsing_utils import ParsingUtils
@@ -47,25 +47,43 @@ class Command(ABC):
     @classmethod
     def execute(cls, message: Message, command_params: list, client: Client):
         if not command_params:
-            cls.display_help(message)
+            cls._display_help(message)
         else:
             cls._execute(message, command_params, client)
 
     @classmethod
-    def display_error(cls, message: Message, error: str):
-        asyncio.create_task(message.reply(
-            "%s. Tapez **!%s** pour afficher l'aide." % (error, cls.name())
-        ))
+    def _display_error(cls, message: Message, error: str):
+        cls._reply(message, "%s. Tapez **!%s** pour afficher l'aide." % (error, cls.name()))
 
     @classmethod
-    def display_help(cls, message: Message):
-        asyncio.create_task(message.reply(cls.get_help()))
+    def _display_help(cls, message: Message):
+        cls._reply(message, cls.get_help(), cls._delete_delay_help())
+
+    @classmethod
+    def _execute_db_bool_request(cls, func: Callable, message):
+        result = func()
+        if not result:
+            cls._reply(message, "Il n'y a rien à faire.")
+
+        return result
 
     @staticmethod
-    def reply(message: Message, text: str):
-        asyncio.create_task(message.reply(
-            "%s" % text
-        ))
+    def _delete_delay() -> int:
+        return 5
+
+    @staticmethod
+    def _delete_delay_help() -> int:
+        return 20
+
+    @classmethod
+    def _reply(cls, message: Message, text: str, delete_delay: int = None):
+        asyncio.create_task(cls._reply_and_delete(message, text, delete_delay))
+
+    @classmethod
+    async def _reply_and_delete(cls, message: Message, text: str, delay: int = None):
+        response = await message.reply("%s" % text)
+        await response.delete(delay=delay or cls._delete_delay())
+        await message.delete(delay=delay or cls._delete_delay())
 
 
 class TuinBotCommand(Command):
@@ -100,50 +118,44 @@ class AutoReactionCommand(Command):
     @classmethod
     def _execute(cls, message: Message, command_params: list, client: Client):
         num_parans = len(command_params)
-        if num_parans < 1 or num_parans > 2:
-            cls.display_error(message, "Nombre de paramètres incorrect")
+
+        if num_parans < 1:
+            cls._display_error(message, "Nombre de paramètres incorrect")
             return
 
         """ TODO
         * utilisateur peut être une mention
         """
 
-        # Param 1 : User or "stop" (to stop all others emoji on us)
+        # Param 1 : "stop"
         if command_params[0] == "stop":
-            if Database().remove_all_auto_reactions(message.author.id):
-                cls.reply(message, "OK, j'ai viré les réactions automatiques que ces sales tuins t'avaient mises !")
-            else:
-                cls.reply(message, "Il n'y a rien à faire.")
+            cls._remove_all_reactions(message.author, message)
             return
 
+        # Param 1 : User
         user = ParsingUtils.find_user(message.channel.members, command_params[0])
         if not user:
-            cls.display_error(message, "Utilisateur introuvable")
+            cls._display_error(message, "Utilisateur introuvable")
             return
 
         # Param 2 missing
         if len(command_params) == 1:
-            reactions = Database().get_auto_reactions(user.id)
-            cls.reply(message, "%s a %s réaction(s) automatique(s) : %s" % (user.name, len(reactions), " ".join(reactions)))
+            cls._list_reactions(user, message)
             return
 
-        # Param 2 : Emoji or "stop" (to stop our emoji on target user)
+        # Param 2 : "stop"
         if command_params[1] == "stop":
-            if Database.remove_auto_reaction(message.author.id, user.id):
-                cls.reply(message, "Réaction automatique retirée de %s !" % user.name)
-            else:
-                cls.reply(message, "Il n'y a rien à faire.")
-        else:
-            emoji_param = command_params[1]
-            emoji = ParsingUtils.get_emoji(emoji_param, client)
-            if not emoji:
-                cls.display_error(message, "Emoji introuvable")
-                return
+            cls._remove_reaction(user, message)
+            return
 
-            if Database.add_auto_reaction(message.author.id, user.id, emoji):
-                cls.reply(message, "Réaction automatique %s ajoutée à %s !" % (emoji, user.name))
-            else:
-                cls.reply(message, "Il n'y a rien à faire.")
+        # Param 2 : Emoji (add reaction)
+        emoji_param = command_params[1]
+        emoji = ParsingUtils.get_emoji(emoji_param, client)
+        if not emoji:
+            cls._display_error(message, "Emoji introuvable")
+            return
+
+        cls._add_reaction(user, emoji, message)
 
     @classmethod
     def get_help(cls) -> str:
@@ -163,6 +175,33 @@ class AutoReactionCommand(Command):
 
         for reaction in reactions:
             asyncio.create_task(message.add_reaction(reaction))
+
+    @classmethod
+    def _add_reaction(cls, user: User, emoji: str, message: Message):
+        if cls._execute_db_bool_request(lambda:
+                                        Database.add_auto_reaction(message.author.id, user.id, emoji),
+                                        message):
+            cls._reply(message, "Réaction automatique %s ajoutée à %s !" % (emoji, user.name))
+
+    @classmethod
+    def _remove_reaction(cls, user: User, message: Message):
+        if cls._execute_db_bool_request(lambda:
+                                        Database.remove_auto_reaction(message.author.id, user.id),
+                                        message):
+            cls._reply(message, "Réaction automatique retirée de %s !" % user.name)
+
+    @classmethod
+    def _remove_all_reactions(cls, user: User, message: Message):
+        if cls._execute_db_bool_request(lambda:
+                                        Database().remove_all_auto_reactions(user.id),
+                                        message):
+            cls._reply(message, "OK, j'ai viré les réactions automatiques que ces sales tuins t'avaient mises !")
+
+    @classmethod
+    def _list_reactions(cls, user: User, message: Message):
+        reactions = Database().get_auto_reactions(user.id)
+        cls._reply(message,
+                   "%s a %s réaction(s) automatique(s) : %s" % (user.name, len(reactions), " ".join(reactions)))
 
 
 class Commands:
