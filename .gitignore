@@ -1,2 +1,3 @@
 .idea/
 _prepa/
+**/__pycache__/**
