@@ -1,9 +1,10 @@
+from __future__ import annotations
 import asyncio
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import List, Dict, Callable
+from typing import List, Dict, Callable, Type, Union
 
-from discord import Message, Client, User
+from discord import Message, Client, User, Embed
 
 from database.database import Database
 from utils.parsing_utils import ParsingUtils
@@ -16,20 +17,32 @@ class HookType(Enum):
 
 
 class Command(ABC):
+    _delete_delay = 5
+    _delete_delay_help = 60
 
     @staticmethod
     @abstractmethod
     def name() -> str:
         pass
 
-    @classmethod
+    @staticmethod
     @abstractmethod
-    def _execute(cls, message: Message, command_params: list, bot: Client):
+    def description_short() -> str:
         pass
+
+    # @staticmethod
+    # @abstractmethod
+    # def params_syntax() -> str:
+    #     pass
+    #
+    # @staticmethod
+    # @abstractmethod
+    # def description_long() -> str:
+    #     pass
 
     @classmethod
     @abstractmethod
-    def get_help(cls) -> str:
+    def _execute(cls, message: Message, command_params: List[str], bot: Client):
         pass
 
     @staticmethod
@@ -45,7 +58,7 @@ class Command(ABC):
         pass
 
     @classmethod
-    def execute(cls, message: Message, command_params: list, client: Client):
+    def execute(cls, message: Message, command_params: List[str], client: Client):
         if not command_params:
             cls._display_help(message)
         else:
@@ -57,33 +70,33 @@ class Command(ABC):
 
     @classmethod
     def _display_help(cls, message: Message):
-        cls._reply(message, cls.get_help(), cls._delete_delay_help())
+        cls._reply(message, cls.get_help(), cls._delete_delay_help)
 
     @classmethod
     def _execute_db_bool_request(cls, func: Callable, message):
         result = func()
         if not result:
-            cls._reply(message, "Il n'y a rien à faire.")
+            cls._reply(message, Messages.nothing_to_do())
 
         return result
 
-    @staticmethod
-    def _delete_delay() -> int:
-        return 5
-
-    @staticmethod
-    def _delete_delay_help() -> int:
-        return 20
+    @classmethod
+    def _reply(cls, message: Message, content: Union[Embed, str], delete_delay: int = None):
+        asyncio.create_task(cls._reply_and_delete(message, content, delete_delay))
 
     @classmethod
-    def _reply(cls, message: Message, text: str, delete_delay: int = None):
-        asyncio.create_task(cls._reply_and_delete(message, text, delete_delay))
+    async def _reply_and_delete(cls, message: Message, content: Union[Embed, str], delay: int = None):
+        if isinstance(content, Embed):
+            response = await message.reply(embed=content)
+        else:
+            response = await message.reply(content=content)
+
+        await response.delete(delay=delay or cls._delete_delay)
+        await message.delete(delay=delay or cls._delete_delay)
 
     @classmethod
-    async def _reply_and_delete(cls, message: Message, text: str, delay: int = None):
-        response = await message.reply("%s" % text)
-        await response.delete(delay=delay or cls._delete_delay())
-        await message.delete(delay=delay or cls._delete_delay())
+    def get_help(cls) -> Union[Embed, str]:
+        return HelpMessageBuilder(cls).build()
 
 
 class TuinBotCommand(Command):
@@ -92,17 +105,32 @@ class TuinBotCommand(Command):
     def name() -> str:
         return "tuin"
 
+    @staticmethod
+    def description_short() -> str:
+        return "Affiche les commandes disponibles pour les tuins."
+
+    # @staticmethod
+    # @abstractmethod
+    # def params_syntax() -> str:
+    #     return ""
+    #
+    # @staticmethod
+    # @abstractmethod
+    # def description_long() -> str:
+    #     return ""
+
     @classmethod
-    def _execute(cls, message: Message, command_params: list, bot: Client):
-        pass
+    def _execute(cls, message: Message, command_params: List[str], bot: Client):
+        # In case use calls it with parameters, show help.
+        cls._display_help(message)
 
     @classmethod
     def get_help(cls) -> str:
         help_mess = "Commandes disponibles :"
 
         for command in Commands.LIST:
-            help_mess += "\n!%s" % command.name()
-        help_mess += "\nTapez une commande pour voir sa page d'aide."
+            help_mess += "\n**!%s** : %s" % (command.name(), command.description_short())
+        help_mess += "\nTape une commande pour voir sa page d'aide."
 
         return help_mess
 
@@ -115,8 +143,23 @@ class AutoReactionCommand(Command):
     def name() -> str:
         return "reac"
 
+    @staticmethod
+    def description_short() -> str:
+        return "Ajoute une réaction automatique aux messages d'un tuin."
+
+    # @staticmethod
+    # @abstractmethod
+    # def params_syntax() -> str:
+    #     return "tuin emoji"
+    #
+    # @staticmethod
+    # @abstractmethod
+    # def description_long() -> str:
+    #     return """__tuin__ : Le nom ou une partie du nom du tuin.
+    #     __emoji__ : Un emoji qui lui collera au cul pour un moment."""
+
     @classmethod
-    def _execute(cls, message: Message, command_params: list, client: Client):
+    def _execute(cls, message: Message, command_params: List[str], client: Client):
         num_parans = len(command_params)
 
         if num_parans < 1:
@@ -156,10 +199,6 @@ class AutoReactionCommand(Command):
             return
 
         cls._add_reaction(user, emoji, message)
-
-    @classmethod
-    def get_help(cls) -> str:
-        return "!%s utilisateur emoji" % cls.name()
 
     @staticmethod
     def has_hook() -> bool:
@@ -203,6 +242,24 @@ class AutoReactionCommand(Command):
         cls._reply(message,
                    "%s a %s réaction(s) automatique(s) : %s" % (user.name, len(reactions), " ".join(reactions)))
 
+    @classmethod
+    def get_help(cls) -> Union[Embed, str]:
+        return HelpMessageBuilder(cls).add_syntax(
+            "Ajoute une réaction à un tuin",
+            [CommandParam("tuin", "Le nom ou une partie du nom du tuin."),
+             CommandParam("emoji", "Un emoji qui lui collera au cul pour un moment.")]
+        ).add_syntax(
+            "Enlève la réaction à un tuin",
+            [CommandParam("tuin", "Le nom ou une partie du nom du tuin."),
+             CommandParam("stop", "Juste \"stop\".", False)]
+        ).add_syntax(
+            "Retire toutes les réactions que les sales tuins t'ont mis",
+            [CommandParam("stop", "Juste \"stop\".", False)]
+        ).add_syntax(
+            "Liste les réactions mises sur un tuin",
+            [CommandParam("tuin", "Le nom ou une partie du nom du tuin.")]
+        ).build()
+
 
 class Commands:
     LIST = [TuinBotCommand, AutoReactionCommand]
@@ -213,7 +270,7 @@ class Commands:
     # Command = TypeVar("Command", covariant=True)
 
     @classmethod
-    def get_hooks(cls, hook_type: HookType) -> List[Command]:
+    def get_hooks(cls, hook_type: HookType) -> List[Type[Command]]:
         if cls._hooks is None:
             cls._hooks = {}
             for command in cls.LIST:
@@ -223,3 +280,82 @@ class Commands:
                     cls._hooks[command.hook_type()].append(command)
 
         return cls._hooks[hook_type]
+
+
+class Messages:
+    @staticmethod
+    def nothing_to_do() -> str:
+        return "Il n'y a rien à faire."
+
+    # @staticmethod
+    # def help_message(command: Type[Command]) -> Embed:
+    #     return Embed(title="Commande __{name}__".format(name=command.name()),
+    #                  description=command.description_short()) \
+    #         .add_field(name="Syntaxe",
+    #                    value="""```apache\n!{name} {params}```{desc_long}""".format(
+    #                        name=command.name(),
+    #                        params=command.params_syntax(),
+    #                        desc_long=command.description_long())
+    #                    )
+
+
+class CommandSyntax:
+
+    def __init__(self, title: str, params: List[CommandParam]):
+        self.title = title
+        self.params = params
+
+
+class CommandParam:
+
+    def __init__(self, name: str, description: str, is_variable: bool = True):
+        self.name = name
+        self.description = description
+        self.is_variable = is_variable
+
+
+class HelpMessageBuilder:
+
+    def __init__(self, command: Type[Command]):
+        self.command = command
+        self.syntaxes: List[CommandSyntax] = []
+
+    def add_syntax(self, title: str, params: List[CommandParam]) -> HelpMessageBuilder:
+        self.syntaxes.append(CommandSyntax(title, params))
+        return self
+
+    def build(self) -> Embed:
+        embed = Embed(title="Commande __{name}__".format(name=self.command.name()),
+                      description="*%s*" % self.command.description_short())
+
+        # embed.add_field(name="\u200B", value="\u200B", inline=False)
+
+        field_count = 0
+
+        for syntax in self.syntaxes:
+            params_syntax = []
+            params_desc = []
+
+            for param in syntax.params:
+                param_display_name = ("[%s]" if param.is_variable else "%s") % param.name
+
+                params_syntax.append(param_display_name)
+                if param.is_variable:
+                    params_desc.append("**%s** : %s" % (param_display_name, param.description))
+
+            embed.add_field(name=syntax.title, inline=True,
+                            value="""```ini\n!{name} {params}```{desc}""".format(
+                                name=self.command.name(),
+                                params=" ".join(params_syntax),
+                                desc="\n".join(params_desc))
+                            )
+
+            field_count += 1
+
+            if field_count % 2 == 1:
+                embed.add_field(name="\u200B", value="\u200B", inline=True)
+
+            if field_count % 2 == 0 and field_count < len(self.syntaxes):
+                embed.add_field(name="\u200B", value="\u200B", inline=False)
+
+        return embed
