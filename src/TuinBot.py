@@ -1,4 +1,5 @@
 from discord import Client, Message, Intents, CustomActivity, Game
+from jproperties import Properties
 
 from command.manager import CommandManager
 
@@ -18,5 +19,13 @@ intents.members = True
 intents.typing = True
 # intents.presences = True
 
+"""
+Put your bot token in a file "bot.properties" :
+token=XXX 
+"""
+config = Properties()
+with open('bot.properties', 'rb') as config_file:
+    config.load(config_file)
+
 bot = TuinBot(intents=intents)
-bot.run('ODIxNjkzMDAyMDAzMTIwMTY4.YFHbPQ.KDFkxtixXQ0IsonxgGMC0TiNNF8')
+bot.run(config.get("token").data)

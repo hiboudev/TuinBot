@@ -94,7 +94,7 @@ class Command(ABC):
                 syntax.callback(message, *list(executors.values())[:len(syntax.params)])
                 return
 
-        # No valid syntax, TODO do something ?
+        # No valid syntax, can we reach this?
 
     @classmethod
     def _display_error(cls, message: Message, error: str):
