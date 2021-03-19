@@ -9,6 +9,7 @@ class ParsingUtils:
 
     @staticmethod
     def find_user(users: List[User], name_part: str) -> [User, None]:
+        """TODO : ne pas tenir compte des accents dans le pseudo"""
         lower_name_part = name_part.lower()
 
         # First search display name
