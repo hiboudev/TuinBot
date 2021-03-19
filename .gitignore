@@ -1,4 +1,4 @@
 .idea/
 _prepa/
 **/__pycache__/**
-bot.properties
+**/bot.properties/**
