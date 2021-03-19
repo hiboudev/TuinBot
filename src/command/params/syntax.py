@@ -1,6 +1,6 @@
-from typing import List, Callable
+from typing import Callable
 
-from command.params.params import CommandParam, ParamType, ParamExpectedResult
+from command.params.params import ParamExpectedResult
 
 
 class CommandSyntax:

@@ -1,6 +1,5 @@
-from typing import Type
-
-from command.commands import Command, Commands
+from command.command_base import Commands
+from command.types import Command
 
 
 class CommandFactory:

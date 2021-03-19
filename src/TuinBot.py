@@ -1,7 +1,12 @@
-from discord import Client, Message, Intents, CustomActivity, Game
+from discord import Client, Message, Intents, Game
 from jproperties import Properties
 
+from command.command_base import Commands
+from command.commands.reac_command import AutoReactionCommand
+from command.commands.tuin_command import TuinBotCommand
 from command.manager import CommandManager
+
+Commands.set_command_list(TuinBotCommand, AutoReactionCommand)
 
 
 class TuinBot(Client):

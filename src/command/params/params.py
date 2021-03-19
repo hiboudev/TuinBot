@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 from enum import Enum
 from typing import Union, Dict, Type
 

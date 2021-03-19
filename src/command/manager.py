@@ -1,7 +1,8 @@
 from discord import Message, Client
 
-from command.commands import HookType, Commands
+from command.command_base import Commands
 from command.factory import CommandFactory
+from command.types import HookType
 
 
 class CommandManager:
