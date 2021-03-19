@@ -20,6 +20,10 @@ class CommandManager:
     def _parse_command(message: Message, client: Client):
         content = message.content
 
+        # Dunno when, but we can have a zero length message (maybe when a new user join the channel ?)
+        if not content:
+            return
+
         if content[0] != "!":
             return
 

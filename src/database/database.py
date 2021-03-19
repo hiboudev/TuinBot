@@ -76,8 +76,6 @@ class DatabaseConnection:
             database="tuinbot"
         )
 
-        print(self.conn)
-
         return self.conn.cursor()
 
     def __exit__(self, exc_type, exc_val, exc_tb):

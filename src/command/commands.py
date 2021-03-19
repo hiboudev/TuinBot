@@ -307,11 +307,12 @@ class HelpMessageBuilder:
             params_desc = []
 
             for param in syntax.params:
-                param_display_name = (
-                                         "[%s]" if param.expected_result_type != ParamType.ALTERNATE_VALUE else "%s") % param.param.name
+                param_is_variable = param.expected_result_type != ParamType.ALTERNATE_VALUE
+                param_display_name = ("[%s]" if param_is_variable else "%s") % param.param.name
 
                 params_syntax.append(param_display_name)
-                if param.expected_result_type != ParamType.ALTERNATE_VALUE:
+
+                if param_is_variable:
                     params_desc.append("**%s** : %s" % (param_display_name, param.param.description))
 
             embed.add_field(name=syntax.title, inline=True,
