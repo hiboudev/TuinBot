@@ -18,20 +18,21 @@ class BaseCommand(Command, ABC):
     _delete_delay_help = 60
 
     _syntaxes = None
+    _sorted_syntaxes = None
+    _min_params_count = None
+    _max_params_count = None
 
     def execute(self, message: Message, command_params: List[str], client: Client):
         if not command_params or not self.get_syntaxes():
             self._display_help(message)
             return
 
-        syntaxes = self.get_syntaxes()
+        syntaxes = self._get_sorted_syntaxes()
 
         if len(command_params) < self._min_params_count \
                 or len(command_params) > self._max_params_count:
             self._display_error(message, "Nombre de paramètres inatendu !")
             return
-
-        Utils.multisort(syntaxes, (("always_valid_input_format", False), ("param_count", True)))
 
         """ Stores one executor by parameter index and parameter type,
         so we parse each parameter only once.
@@ -96,10 +97,15 @@ Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige :wink:
                 if syntax.param_count > cls._max_params_count:
                     cls._max_params_count = syntax.param_count
 
-        """ Returns a copy because the list is sorted outside for command processing,
-        but we don't want to change inner sorting for help generation.
-        """
-        return cls._syntaxes.copy()
+        return cls._syntaxes
+
+    @classmethod
+    def _get_sorted_syntaxes(cls) -> List[CommandSyntax]:
+        if cls._sorted_syntaxes is None:
+            cls._sorted_syntaxes = cls.get_syntaxes().copy()
+            Utils.multisort(cls._sorted_syntaxes, (("always_valid_input_format", False), ("param_count", True)))
+
+        return cls._sorted_syntaxes
 
     @classmethod
     @abstractmethod
