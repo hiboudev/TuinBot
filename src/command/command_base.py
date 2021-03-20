@@ -14,7 +14,7 @@ class BaseCommand(Command, ABC):
     _delete_delay_help = 60
 
     def execute(self, message: Message, command_params: List[str], client: Client):
-        if not command_params:
+        if not command_params or not self.get_params():
             self._display_help(message)
             return
 

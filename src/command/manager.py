@@ -1,3 +1,5 @@
+import shlex
+
 from discord import Message, Client
 
 from command.command_base import Commands
@@ -31,7 +33,8 @@ class CommandManager:
         if len(content) < 2:
             return
 
-        command_split = content[1:].split()
+        command_split = shlex.split(content[1:])
+        # command_split = content[1:].split()
         command_name = command_split[0]
 
         command = CommandFactory.get_command(command_name)

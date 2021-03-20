@@ -64,6 +64,10 @@ class UserParamExecutor(CommandParamExecutor):
         if not isinstance(message.channel, TextChannel):
             return
 
+        if len(value) < 3:
+            self._error = "Le nom d'utilisateur doit faire au moins 3 caractères"
+            return
+
         self._user = ParsingUtils.find_user(message.channel.members, value)
 
         if self._user:

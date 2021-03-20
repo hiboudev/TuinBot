@@ -23,7 +23,7 @@ class Command(ABC):
 
     @staticmethod
     @abstractmethod
-    def description() -> str:  # TODO rename
+    def description() -> str:
         pass
 
     @classmethod
