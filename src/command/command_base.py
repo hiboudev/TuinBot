@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from abc import ABC, abstractmethod
 from typing import List, Dict, Callable, Type, Union, Iterable
 
@@ -23,6 +24,12 @@ class BaseCommand(Command, ABC):
             return
 
         syntaxes = self.get_syntaxes()
+
+        if len(command_params) < self._min_params_count \
+                or len(command_params) > self._max_params_count:
+            self._display_error(message, "Nombre de paramètres inatendu !")
+            return
+
         Utils.multisort(syntaxes, (("always_valid_input_format", False), ("param_count", True)))
 
         # stores one executor by parameter type and parameter index
@@ -73,6 +80,13 @@ class BaseCommand(Command, ABC):
     def get_syntaxes(cls) -> List[CommandSyntax]:
         if cls._syntaxes is None:
             cls._syntaxes = cls._build_syntaxes()
+            cls._min_params_count = sys.maxsize
+            cls._max_params_count = 0
+            for syntax in cls._syntaxes:
+                if syntax.param_count < cls._min_params_count:
+                    cls._min_params_count = syntax.param_count
+                if syntax.param_count > cls._max_params_count:
+                    cls._max_params_count = syntax.param_count
 
         """ Returns a copy because the list is sorted outside for command processing,
         but we don't want to change inner sorting for help generation.

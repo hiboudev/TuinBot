@@ -33,8 +33,8 @@ class CommandManager:
         if len(content) < 2:
             return
 
+        # Use quotes to insert spaces in a parameter value
         command_split = shlex.split(content[1:])
-        # command_split = content[1:].split()
         command_name = command_split[0]
 
         command = CommandFactory.get_command(command_name)
