@@ -63,7 +63,8 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     def execute_hook(cls, message: Message):
-        reactions = Database().get_auto_reactions(message.author.id)
+        reactions = Database().get_auto_reactions(message.guild.id,
+                                                  message.author.id)
 
         for reaction in reactions:
             asyncio.create_task(message.add_reaction(reaction))
@@ -71,7 +72,8 @@ class AutoReactionCommand(BaseCommand):
     @classmethod
     def _add_reaction(cls, message: Message, user_executor: UserParamExecutor, emoji_executor: EmojiParamExecutor):
         if cls._execute_db_bool_request(lambda:
-                                        Database.add_auto_reaction(message.author.id,
+                                        Database.add_auto_reaction(message.guild.id,
+                                                                   message.author.id,
                                                                    user_executor.get_user().id,
                                                                    emoji_executor.get_emoji()
                                                                    ),
@@ -84,7 +86,9 @@ class AutoReactionCommand(BaseCommand):
     @classmethod
     def _remove_reaction(cls, message: Message, user_executor: UserParamExecutor, emoji_executor: EmojiParamExecutor):
         if cls._execute_db_bool_request(lambda:
-                                        Database.remove_auto_reaction(message.author.id, user_executor.get_user().id),
+                                        Database.remove_auto_reaction(message.guild.id,
+                                                                      message.author.id,
+                                                                      user_executor.get_user().id),
                                         message):
             cls._reply(message, "Réaction automatique retirée de %s !" % user_executor.get_user().name)
 
@@ -92,13 +96,15 @@ class AutoReactionCommand(BaseCommand):
     @classmethod
     def _remove_all_reactions(cls, message: Message, user_executor: UserParamExecutor):
         if cls._execute_db_bool_request(lambda:
-                                        Database().remove_all_auto_reactions(message.author.id),
+                                        Database().remove_all_auto_reactions(message.guild.id,
+                                                                             message.author.id),
                                         message):
             cls._reply(message, "OK, j'ai viré les réactions automatiques que ces sales tuins t'avaient mises !")
 
     @classmethod
     def _list_reactions(cls, message: Message, user_executor: UserParamExecutor):
-        reactions = Database().get_auto_reactions(user_executor.get_user().id)
+        reactions = Database().get_auto_reactions(message.guild.id,
+                                                  user_executor.get_user().id)
         cls._reply(message,
                    "%s a %s réaction(s) automatique(s) : %s" % (
                        user_executor.get_user().name, len(reactions), " ".join(reactions)))

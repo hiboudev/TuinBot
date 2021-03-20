@@ -14,6 +14,10 @@ class CommandManager:
         if message.author.bot:
             return
 
+        # Guild is not always known (maybe in private messages), but our commands needs a guild.
+        if not message.guild:
+            return
+
         cls._parse_command(message, client)
 
         for hook in Commands.get_hooks(HookType.MESSAGE):
