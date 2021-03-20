@@ -13,9 +13,6 @@ from database.database import Database
 
 class AutoReactionCommand(BaseCommand):
 
-    def __init__(self):
-        self.user_executor = None
-
     @staticmethod
     def name() -> str:
         return "reac"
