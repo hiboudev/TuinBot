@@ -78,6 +78,8 @@ class BaseCommand(Command, ABC):
                 return
 
         # No valid syntax, can we reach this?
+        self._display_error(message, """Ha ! On dirait que le développeur n'avait pas prévu ça !
+Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige :wink:""")
 
     @classmethod
     def get_syntaxes(cls) -> List[CommandSyntax]:
@@ -106,7 +108,7 @@ class BaseCommand(Command, ABC):
 
     @classmethod
     def _display_error(cls, message: Message, error: str):
-        cls._reply(message, "%s. Tapez **!%s** pour afficher l'aide." % (error, cls.name()))
+        cls._reply(message, "%s. Tape **!%s** pour afficher l'aide." % (error, cls.name()))
 
     @classmethod
     def _display_help(cls, message: Message):
