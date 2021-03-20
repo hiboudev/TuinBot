@@ -80,11 +80,14 @@ class BaseCommand(Command, ABC):
     def get_syntaxes(cls) -> List[CommandSyntax]:
         if cls._syntaxes is None:
             cls._syntaxes = cls._build_syntaxes()
+
             cls._min_params_count = sys.maxsize
             cls._max_params_count = 0
+
             for syntax in cls._syntaxes:
                 if syntax.param_count < cls._min_params_count:
                     cls._min_params_count = syntax.param_count
+
                 if syntax.param_count > cls._max_params_count:
                     cls._max_params_count = syntax.param_count
 
