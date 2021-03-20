@@ -5,8 +5,8 @@ from discord import Message
 
 from command.command_base import BaseCommand
 from command.params.application import ApplicationParams
-from command.params.params import CommandParam, ParamType, \
-    UserParamExecutor, EmojiParamExecutor
+from command.params.executors import UserParamExecutor, EmojiParamExecutor
+from command.params.params import CommandParam, ParamType
 from command.params.syntax import CommandSyntax
 from command.types import HookType
 from database.database import Database
@@ -59,8 +59,8 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     def execute_hook(cls, message: Message):
-        reactions = Database().get_auto_reactions(message.guild.id,
-                                                  message.author.id)
+        reactions = Database.get_auto_reactions(message.guild.id,
+                                                message.author.id)
 
         for reaction in reactions:
             asyncio.create_task(message.add_reaction(reaction))
@@ -92,15 +92,15 @@ class AutoReactionCommand(BaseCommand):
     @classmethod
     def _remove_all_reactions(cls, message: Message, user_executor: UserParamExecutor):
         if cls._execute_db_bool_request(lambda:
-                                        Database().remove_all_auto_reactions(message.guild.id,
-                                                                             message.author.id),
+                                        Database.remove_all_auto_reactions(message.guild.id,
+                                                                           message.author.id),
                                         message):
             cls._reply(message, "OK, j'ai viré les réactions automatiques que ces sales tuins t'avaient mises !")
 
     @classmethod
     def _list_reactions(cls, message: Message, user_executor: UserParamExecutor):
-        reactions = Database().get_auto_reactions(message.guild.id,
-                                                  user_executor.get_user().id)
+        reactions = Database.get_auto_reactions(message.guild.id,
+                                                user_executor.get_user().id)
         cls._reply(message,
                    "%s a %s réaction(s) automatique(s) : %s" % (
                        user_executor.get_user().name, len(reactions), " ".join(reactions)))

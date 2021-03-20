@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Callable, List
 
-from command.params.params import CommandParam, ParamExecutorFactory
+from command.params.executors import ParamExecutorFactory
+from command.params.params import CommandParam
 
 
 class CommandSyntax:

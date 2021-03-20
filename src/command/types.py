@@ -30,6 +30,15 @@ class Command(ABC):
     def get_syntaxes(cls) -> List[CommandSyntax]:
         pass
 
+    @abstractmethod
+    def execute(self, message: Message, command_params: List[str], client: Client):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def get_help(cls) -> Union[Embed, str]:
+        pass
+
     @staticmethod
     def has_hook() -> bool:
         return False
@@ -40,13 +49,4 @@ class Command(ABC):
 
     @classmethod
     def execute_hook(cls, message: Message):
-        pass
-
-    @abstractmethod
-    def execute(self, message: Message, command_params: List[str], client: Client):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def get_help(cls) -> Union[Embed, str]:
         pass

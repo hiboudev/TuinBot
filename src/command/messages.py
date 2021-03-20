@@ -19,7 +19,7 @@ class HelpMessageBuilder:
 
     def build(self) -> Embed:
         embed = Embed(title="Commande __{name}__".format(name=self._command.name()),
-                      description="*%s*" % self._command.description())
+                      description="*%s*\n\u200B" % self._command.description())
 
         field_count = 0
 
@@ -38,19 +38,23 @@ class HelpMessageBuilder:
 
                 params_syntax.append(param_display_name)
 
+            field_count += 1
+
+            add_bottom_margin = len(self._command.get_syntaxes()) - field_count > 2
+
+            # add space at field bottom for better lisibility, it's thiner than an empty field
             embed.add_field(name=syntax.title, inline=True,
-                            value="""```ini\n!{name} {params}```{desc}""".format(
+                            value="""```ini\n!{name} {params}```{desc}{margin}""".format(
                                 name=self._command.name(),
                                 params=" ".join(params_syntax),
-                                desc="\n".join(params_desc))
+                                desc="\n".join(params_desc),
+                                margin="\n\u200B" if add_bottom_margin else "")
                             )
-
-            field_count += 1
 
             if field_count % 2 == 1:
                 embed.add_field(name="\u200B", value="\u200B", inline=True)
 
-            if field_count % 2 == 0 and field_count < len(self._command.get_syntaxes()):
-                embed.add_field(name="\u200B", value="\u200B", inline=False)
+                # if field_count % 2 == 0 and field_count < len(self._command.get_syntaxes()):
+                #     embed.add_field(name="\u200B", value="\u200B", inline=False)
 
         return embed

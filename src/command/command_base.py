@@ -6,7 +6,8 @@ from typing import List, Dict, Callable, Type, Union, Iterable
 from discord import Message, Client, Embed
 
 from command.messages import HelpMessageBuilder, Messages
-from command.params.params import ParamExecutorFactory, ParamType, ParamResultType
+from command.params.executors import ParamExecutorFactory
+from command.params.params import ParamType, ParamResultType
 from command.params.syntax import CommandSyntax
 from command.types import Command, HookType
 from utils.utils import Utils
