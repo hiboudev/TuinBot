@@ -12,6 +12,7 @@ class CommandSyntax:
         self.title = title
         self.params = params
         self.callback = callback
+        self._always_valid_input_format = None
 
     @property
     def param_count(self) -> int:
@@ -19,12 +20,14 @@ class CommandSyntax:
 
     @property
     def always_valid_input_format(self) -> bool:
-        # TODO optim save result
-        for param in self.params:
-            if not ParamExecutorFactory.get_executor_class(param).always_valid_input_format():
-                return False
+        if self._always_valid_input_format is None:
+            for param in self.params:
+                if not ParamExecutorFactory.get_executor_class(param).always_valid_input_format():
+                    self._always_valid_input_format = False
+                    return False
+            self._always_valid_input_format = True
 
-        return True
+        return self._always_valid_input_format
 
     @staticmethod
     def validate_syntaxes(syntaxes: List[CommandSyntax]):
