@@ -8,47 +8,55 @@ from utils.parsing_utils import ParsingUtils
 
 
 class ParamType(Enum):
-    INVALID = 1
-    USER = 2
-    EMOJI = 3
-    ALTERNATE_VALUE = 4
+    USER = 1
+    EMOJI = 2
+    SINGLE_VALUE = 3
+
+
+class ParamResultType(Enum):
+    VALID = 1
+    INVALID = 2
 
 
 class CommandParam:
 
-    def __init__(self, name: str, description: str, main_type: ParamType, alternate_value: str = None):
+    def __init__(self, name: str, description: str, param_type: ParamType, single_value: str = None):
+        if param_type == ParamType.SINGLE_VALUE and single_value is None \
+                or param_type != ParamType.SINGLE_VALUE and single_value is not None:
+            raise Exception("param_type and single_value are not coherents!")
+
         self.name = name
         self.description = description
-        self.main_type = main_type
-        self.alternate_value = alternate_value
-
-
-class ParamExpectedResult:
-
-    def __init__(self, param: CommandParam, expected_result_type: ParamType):
-        self.param = param
-        self.expected_result_type = expected_result_type
+        self.param_type = param_type
+        self.single_value = single_value
 
 
 class CommandParamExecutor:
 
     def __init__(self, param: CommandParam):
         self.param = param
-        self._result_type = ParamType.INVALID
+        self._result_type = ParamResultType.INVALID
         self._error = None
-
-    def set_value(self, value: str, message: Message, client: Client):
-        if self.param.alternate_value is not None and self.param.alternate_value == value:
-            self._result_type = ParamType.ALTERNATE_VALUE
-        else:
-            self._process_value(value, message, client)
+        self._is_input_format_valid = False
 
     @abstractmethod
-    def _process_value(self, value: str, message: Message, client: Client):
-        """Process value only for the main type, alternate value has been processed in set_value."""
+    def set_value(self, value: str, message: Message, client: Client):
         pass
 
-    def get_result_type(self) -> ParamType:
+    @staticmethod
+    @abstractmethod
+    def always_valid_input_format() -> bool:
+        """
+        Indicate if this object will always accept input even if post-processing
+        finds it's not valid.
+        It's used to check if syntax is accepted as the "wanted" syntax by user, even if parameters contain errors.
+        """
+        pass
+
+    def is_input_format_valid(self) -> bool:
+        return self._is_input_format_valid
+
+    def get_result_type(self) -> ParamResultType:
         return self._result_type
 
     def get_error(self) -> str:
@@ -61,7 +69,8 @@ class UserParamExecutor(CommandParamExecutor):
         super().__init__(param)
         self._user = None
 
-    def _process_value(self, value: str, message: Message, client: Client):
+    def set_value(self, value: str, message: Message, client: Client):
+        print(self)
         if not isinstance(message.channel, TextChannel):
             return
 
@@ -74,12 +83,19 @@ class UserParamExecutor(CommandParamExecutor):
         self._user = ParsingUtils.find_user(message.channel.members, value)
 
         if self._user:
-            self._result_type = ParamType.USER
+            self._result_type = ParamResultType.VALID
         else:
             self._error = "Utilisateur introuvable"
 
     def get_user(self) -> Union[User, None]:
         return self._user
+
+    @staticmethod
+    def always_valid_input_format() -> bool:
+        return True
+
+    def is_input_format_valid(self) -> bool:
+        return True
 
 
 class EmojiParamExecutor(CommandParamExecutor):
@@ -88,30 +104,59 @@ class EmojiParamExecutor(CommandParamExecutor):
         super().__init__(param)
         self._emoji = None
 
-    def _process_value(self, value: str, message: Message, client: Client):
-        # if not isinstance(message.channel, TextChannel):
-        #     return
+    def set_value(self, value: str, message: Message, client: Client):
+        print(self)
 
         self._emoji = ParsingUtils.get_emoji(value, client)
 
         if self._emoji:
-            self._result_type = ParamType.EMOJI
+            self._result_type = ParamResultType.VALID
         else:
             self._error = "Emoji invalide"
 
     def get_emoji(self) -> Union[str, None]:
         return self._emoji
 
+    @staticmethod
+    def always_valid_input_format() -> bool:
+        return True
+
+    def is_input_format_valid(self) -> bool:
+        return True
+
+
+class SingleValueParamExecutor(CommandParamExecutor):
+
+    def set_value(self, value: str, message: Message, client: Client):
+        print(self)
+        if value == self.param.single_value:
+            self._is_input_format_valid = True
+            self._result_type = ParamResultType.VALID
+        else:
+            self._error = "Valeur invalide"
+
+    @staticmethod
+    def always_valid_input_format() -> bool:
+        return False
+
 
 class ParamExecutorFactory:
     _executors_by_type: Dict[ParamType, Type[CommandParamExecutor]] = {
         ParamType.USER: UserParamExecutor,
-        ParamType.EMOJI: EmojiParamExecutor
+        ParamType.EMOJI: EmojiParamExecutor,
+        ParamType.SINGLE_VALUE: SingleValueParamExecutor
     }
 
     @classmethod
     def get_executor(cls, param: CommandParam) -> CommandParamExecutor:
-        if param.main_type not in cls._executors_by_type:
+        if param.param_type not in cls._executors_by_type:
             raise Exception("No param executor for this type!")
 
-        return cls._executors_by_type[param.main_type](param)
+        return cls._executors_by_type[param.param_type](param)
+
+    @classmethod
+    def get_executor_class(cls, param: CommandParam) -> Type[CommandParamExecutor]:
+        if param.param_type not in cls._executors_by_type:
+            raise Exception("No param executor for this type!")
+
+        return cls._executors_by_type[param.param_type]

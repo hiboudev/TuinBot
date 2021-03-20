@@ -6,15 +6,13 @@ from discord import Message
 
 from command.command_base import BaseCommand
 from command.params.params import CommandParam, ParamType, \
-    ParamExpectedResult, UserParamExecutor, EmojiParamExecutor
+    UserParamExecutor, EmojiParamExecutor
 from command.params.syntax import CommandSyntax
 from command.types import HookType
 from database.database import Database
 
 
 class AutoReactionCommand(BaseCommand):
-    _params = None
-    _syntaxes = None
 
     def __init__(self):
         self.user_executor = None
@@ -28,42 +26,33 @@ class AutoReactionCommand(BaseCommand):
         return "Ajoute une réaction automatique aux messages d'un tuin."
 
     @classmethod
-    def get_params(cls) -> List[CommandParam]:
-        if cls._params is None:
-            cls._params = [
-                CommandParam("tuin", "Le nom ou une partie du nom du tuin.", ParamType.USER, "stop"),
-                CommandParam("emoji", "Un emoji qui lui collera au cul pour un moment.", ParamType.EMOJI, "stop"),
-            ]
+    def _build_syntaxes(cls) -> List[CommandSyntax]:
+        user_param = CommandParam("tuin", "Le nom ou une partie du nom du tuin.", ParamType.USER)
+        emoji_param = CommandParam("tuin", "Le nom ou une partie du nom du tuin.", ParamType.EMOJI)
+        stop_param = CommandParam("tuin", "Le nom ou une partie du nom du tuin.", ParamType.SINGLE_VALUE, "stop")
 
-        return cls._params
+        syntaxes = [
+            CommandSyntax("Ajoute une réaction sur un tuin",
+                          cls._add_reaction,
+                          user_param,
+                          emoji_param
+                          ),
+            CommandSyntax("Enlève ta réaction sur un tuin",
+                          cls._remove_reaction,
+                          user_param,
+                          stop_param
+                          ),
+            CommandSyntax("Liste les réactions mises sur un tuin",
+                          cls._list_reactions,
+                          user_param
+                          ),
+            CommandSyntax("Enlève toutes les réactions que les sales tuins t'ont mis",
+                          cls._remove_all_reactions,
+                          stop_param
+                          )
+        ]
 
-    @classmethod
-    def get_syntaxes(cls) -> List[CommandSyntax]:
-        params = cls.get_params()
-
-        if cls._syntaxes is None:
-            cls._syntaxes = [
-                CommandSyntax("Ajoute une réaction sur un tuin",
-                              cls._add_reaction,
-                              ParamExpectedResult(params[0], ParamType.USER),
-                              ParamExpectedResult(params[1], ParamType.EMOJI)
-                              ),
-                CommandSyntax("Enlève ta réaction sur un tuin",
-                              cls._remove_reaction,
-                              ParamExpectedResult(params[0], ParamType.USER),
-                              ParamExpectedResult(params[1], ParamType.ALTERNATE_VALUE)
-                              ),
-                CommandSyntax("Liste les réactions mises sur un tuin",
-                              cls._list_reactions,
-                              ParamExpectedResult(params[0], ParamType.USER)
-                              ),
-                CommandSyntax("Enlève toutes les réactions que les sales tuins t'ont mis",
-                              cls._remove_all_reactions,
-                              ParamExpectedResult(params[0], ParamType.ALTERNATE_VALUE)
-                              )
-            ]
-
-        return cls._syntaxes
+        return syntaxes
 
     @staticmethod
     def has_hook() -> bool:

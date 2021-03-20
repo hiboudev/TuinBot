@@ -1,59 +1,88 @@
 import asyncio
-from abc import ABC
-from typing import List, Dict, Callable, Type, Union
+from abc import ABC, abstractmethod
+from typing import List, Dict, Callable, Type, Union, Iterable
 
 from discord import Message, Client, Embed
 
 from command.messages import HelpMessageBuilder, Messages
-from command.params.params import CommandParam, CommandParamExecutor, ParamExecutorFactory, ParamType
+from command.params.params import ParamExecutorFactory, ParamType, ParamResultType
+from command.params.syntax import CommandSyntax
 from command.types import Command, HookType
+from utils.utils import Utils
 
 
 class BaseCommand(Command, ABC):
     _delete_delay = 10
     _delete_delay_help = 60
 
+    _syntaxes = None
+
     def execute(self, message: Message, command_params: List[str], client: Client):
-        if not command_params or not self.get_params():
+        if not command_params or not self.get_syntaxes():
             self._display_help(message)
             return
 
-        params = self.get_params()
-        executors: Dict[CommandParam, CommandParamExecutor] = {}
-        param_index = 0
-
-        for user_param in command_params[:len(params)]:
-            param = params[param_index]
-            executor = ParamExecutorFactory.get_executor(param)
-            executor.set_value(user_param, message, client)
-
-            if executor.get_result_type() == ParamType.INVALID:
-                self._display_error(message, executor.get_error())
-                return
-
-            executors[param] = executor
-            param_index += 1
-
         syntaxes = self.get_syntaxes()
-        syntaxes.sort(key=lambda x: len(x.params), reverse=True)
+        Utils.multisort(syntaxes, (("always_valid_input_format", False), ("param_count", True)))
+
+        # stores one executor by parameter type and parameter index
+        all_executors: Dict[int, Dict[ParamType]] = {}
 
         for syntax in syntaxes:
-            if len(command_params) < len(syntax.params):
+            if len(command_params) != len(syntax.params):
                 continue
 
+            syntax_executors = []
             syntax_is_valid = True
+            param_index = 0
 
             for param in syntax.params:
-                executor = executors[param.param]
-                if param.expected_result_type != executor.get_result_type():
-                    syntax_is_valid = False
-                    break
+                if param_index not in all_executors:
+                    all_executors[param_index] = {}
+
+                if param.param_type not in all_executors[param_index]:
+                    executor = ParamExecutorFactory.get_executor(param)
+                    executor.set_value(command_params[param_index], message, client)
+                    all_executors[param_index][param.param_type] = executor
+                else:
+                    executor = all_executors[param_index][param.param_type]
+
+                syntax_executors.append(executor)
+
+                if not executor.always_valid_input_format():
+                    if not executor.is_input_format_valid():
+                        syntax_is_valid = False
+                        break
+                    elif executor.get_result_type() == ParamResultType.INVALID:
+                        self._display_error(message, executor.get_error())
+                        return
+                else:
+                    if executor.get_result_type() == ParamResultType.INVALID:
+                        self._display_error(message, executor.get_error())
+                        return
+
+                param_index += 1
 
             if syntax_is_valid:
-                syntax.callback(message, *list(executors.values())[:len(syntax.params)])
+                syntax.callback(message, *syntax_executors)  # [:len(syntax.params)])
                 return
 
         # No valid syntax, can we reach this?
+
+    @classmethod
+    def get_syntaxes(cls) -> List[CommandSyntax]:
+        if cls._syntaxes is None:
+            cls._syntaxes = cls._build_syntaxes()
+
+        """ Returns a copy because the list is sorted outside for command processing,
+        but we don't want to change inner sorting for help generation.
+        """
+        return cls._syntaxes.copy()
+
+    @classmethod
+    @abstractmethod
+    def _build_syntaxes(cls) -> List[CommandSyntax]:
+        pass
 
     @classmethod
     def _display_error(cls, message: Message, error: str):
@@ -103,6 +132,7 @@ class Commands:
 
     @classmethod
     def set_command_list(cls, *command_list: Type[Command]):
+        cls._validate_commands_syntax(command_list)
         cls.LIST = command_list
 
     @classmethod
@@ -116,3 +146,8 @@ class Commands:
                     cls._hooks[command.hook_type()].append(command)
 
         return cls._hooks[hook_type]
+
+    @classmethod
+    def _validate_commands_syntax(cls, commands: Iterable[Type[Command]]):
+        for command in commands:
+            CommandSyntax.validate_syntaxes(command.get_syntaxes())

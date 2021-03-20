@@ -2,7 +2,6 @@
 from typing import List
 
 from command.command_base import BaseCommand, Commands
-from command.params.params import CommandParam
 from command.params.syntax import CommandSyntax
 
 
@@ -17,11 +16,7 @@ class TuinBotCommand(BaseCommand):
         return "Affiche les commandes disponibles pour les tuins."
 
     @classmethod
-    def get_params(cls) -> List[CommandParam]:
-        return []
-
-    @classmethod
-    def get_syntaxes(cls) -> List[CommandSyntax]:
+    def _build_syntaxes(cls) -> List[CommandSyntax]:
         return []
 
     @classmethod

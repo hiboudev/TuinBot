@@ -1,21 +1,34 @@
-from typing import Callable
+from __future__ import annotations
+from typing import Callable, List
 
-from command.params.params import ParamExpectedResult
+from command.params.params import CommandParam, ParamExecutorFactory
 
 
 class CommandSyntax:
 
-    def __init__(self, title: str, callback: Callable, *params: ParamExpectedResult):
+    def __init__(self, title: str, callback: Callable, *params: CommandParam):
         self.title = title
         self.params = params
         self.callback = callback
 
-    # def is_valid(self) -> bool:
-    #     for param in self._params:
-    #         if param.param.get_result_type() != param.expected_result:
-    #             return False
-    #
-    #     return True
+    @property
+    def param_count(self) -> int:
+        return len(self.params)
 
-    # def execute_callback(self):
-    #     self._callback()
+    @property
+    def always_valid_input_format(self) -> bool:
+        # TODO optim save result
+        for param in self.params:
+            if not ParamExecutorFactory.get_executor_class(param).always_valid_input_format():
+                return False
+
+        return True
+
+    @staticmethod
+    def validate_syntaxes(syntaxes: List[CommandSyntax]):
+        always_valid_param_count = set()
+        for syntax in syntaxes:
+            if syntax.always_valid_input_format:
+                if syntax.param_count in always_valid_param_count:
+                    raise Exception("One of the command syntaxes will never execute!")
+                always_valid_param_count.add(syntax.param_count)

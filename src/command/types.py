@@ -4,7 +4,6 @@ from typing import List, Union
 
 from discord import Message, Client, Embed
 
-from command.params.params import CommandParam
 from command.params.syntax import CommandSyntax
 
 
@@ -24,11 +23,6 @@ class Command(ABC):
     @staticmethod
     @abstractmethod
     def description() -> str:
-        pass
-
-    @classmethod
-    @abstractmethod
-    def get_params(cls) -> List[CommandParam]:
         pass
 
     @classmethod
