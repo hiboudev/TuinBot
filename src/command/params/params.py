@@ -1,3 +1,4 @@
+import sys
 from abc import abstractmethod
 from enum import Enum
 from typing import Union, Dict, Type
@@ -11,6 +12,7 @@ class ParamType(Enum):
     USER = 1
     EMOJI = 2
     SINGLE_VALUE = 3
+    INT = 4
 
 
 class ParamResultType(Enum):
@@ -18,17 +20,41 @@ class ParamResultType(Enum):
     INVALID = 2
 
 
+class ParamConfig:
+    pass
+
+
+class SingleValueParamConfig(ParamConfig):
+
+    def __init__(self, single_value: str):
+        self.single_value = single_value
+
+
+class IntParamConfig(ParamConfig):
+
+    def __init__(self, min_value: int = 0, max_value: int = sys.maxsize):
+        self.min_value = min_value
+        self.max_value = max_value
+
+
 class CommandParam:
 
-    def __init__(self, name: str, description: str, param_type: ParamType, single_value: str = None):
-        if param_type == ParamType.SINGLE_VALUE and single_value is None \
-                or param_type != ParamType.SINGLE_VALUE and single_value is not None:
-            raise Exception("param_type and single_value are not coherents!")
+    def __init__(self, name: str, description: str, param_type: ParamType, config: ParamConfig = None):
+        # if param_type == ParamType.SINGLE_VALUE and single_value is None \
+        #         or param_type != ParamType.SINGLE_VALUE and single_value is not None:
+        #     raise Exception("param_type and single_value are not coherents!")
 
         self.name = name
         self.description = description
         self.param_type = param_type
-        self.single_value = single_value
+        self.config = config
+
+    @property
+    def single_value(self) -> str:
+        if not isinstance(self.config, SingleValueParamConfig):
+            raise Exception("Param is not a SingleValueParamConfig!")
+
+        return self.config.single_value
 
 
 class CommandParamExecutor:
@@ -129,7 +155,11 @@ class SingleValueParamExecutor(CommandParamExecutor):
 
     def set_value(self, value: str, message: Message, client: Client):
         print(self)
-        if value == self.param.single_value:
+
+        if self.param.config is None or not isinstance(self.param.config, SingleValueParamConfig):
+            raise Exception("Config not found!")
+
+        if value == self.param.config.single_value:
             self._is_input_format_valid = True
             self._result_type = ParamResultType.VALID
         else:
@@ -140,11 +170,38 @@ class SingleValueParamExecutor(CommandParamExecutor):
         return False
 
 
+class IntParamExecutor(CommandParamExecutor):
+    _int_value = None
+
+    def set_value(self, value: str, message: Message, client: Client):
+        if self.param.config is None or not isinstance(self.param.config, IntParamConfig):
+            raise Exception("Config not found!")
+
+        try:
+            self._int_value = int(value)
+            self._is_input_format_valid = True
+        except ValueError:
+            return
+
+        if self.param.config.min_value <= self._int_value <= self.param.config.max_value:
+            self._result_type = ParamResultType.VALID
+        else:
+            self._error = "Valeur invalide"
+
+    @staticmethod
+    def always_valid_input_format() -> bool:
+        return False
+
+    def get_int(self) -> int:
+        return self._int_value
+
+
 class ParamExecutorFactory:
     _executors_by_type: Dict[ParamType, Type[CommandParamExecutor]] = {
         ParamType.USER: UserParamExecutor,
         ParamType.EMOJI: EmojiParamExecutor,
-        ParamType.SINGLE_VALUE: SingleValueParamExecutor
+        ParamType.SINGLE_VALUE: SingleValueParamExecutor,
+        ParamType.INT: IntParamExecutor
     }
 
     @classmethod

@@ -1,4 +1,3 @@
-
 import asyncio
 from typing import List
 
@@ -6,7 +5,7 @@ from discord import Message
 
 from command.command_base import BaseCommand
 from command.params.params import CommandParam, ParamType, \
-    UserParamExecutor, EmojiParamExecutor
+    UserParamExecutor, EmojiParamExecutor, SingleValueParamConfig
 from command.params.syntax import CommandSyntax
 from command.types import HookType
 from database.database import Database
@@ -28,8 +27,8 @@ class AutoReactionCommand(BaseCommand):
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
         user_param = CommandParam("tuin", "Le nom ou une partie du nom du tuin.", ParamType.USER)
-        emoji_param = CommandParam("tuin", "Le nom ou une partie du nom du tuin.", ParamType.EMOJI)
-        stop_param = CommandParam("tuin", "Le nom ou une partie du nom du tuin.", ParamType.SINGLE_VALUE, "stop")
+        emoji_param = CommandParam("emoji", "Un emoji qui lui collera au cul pour un moment.", ParamType.EMOJI)
+        stop_param = CommandParam("stop", "", ParamType.SINGLE_VALUE, SingleValueParamConfig("stop"))
 
         syntaxes = [
             CommandSyntax("Ajoute une réaction sur un tuin",
