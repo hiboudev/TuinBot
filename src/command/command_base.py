@@ -32,7 +32,9 @@ class BaseCommand(Command, ABC):
 
         Utils.multisort(syntaxes, (("always_valid_input_format", False), ("param_count", True)))
 
-        # stores one executor by parameter type and parameter index
+        """ Stores one executor by parameter index and parameter type,
+        so we parse each parameter only once.
+        """
         all_executors: Dict[int, Dict[ParamType]] = {}
 
         for syntax in syntaxes:
@@ -137,15 +139,10 @@ class BaseCommand(Command, ABC):
 
 
 class Commands:
-    _hooks: Dict = None
+    _hooks: Dict[HookType, List[Type[Command]]] = None
 
-    # LIST = [TuinBotCommand, AutoReactionCommand]
     # List is not filled here cause of cyclic import issue.
-    LIST = []
-
-    # _hooks: Dict[HookType, Command] = None
-    # cf. https://mypy.readthedocs.io/en/latest/generics.html#variance-of-generic-types
-    # Command = TypeVar("Command", covariant=True)
+    LIST: Iterable[Type[Command]] = []
 
     @classmethod
     def set_command_list(cls, *command_list: Type[Command]):
