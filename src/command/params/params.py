@@ -45,6 +45,7 @@ class CommandParamExecutor:
 
     @abstractmethod
     def _process_value(self, value: str, message: Message, client: Client):
+        """Process value only for the main type, alternate value has been processed in set_value."""
         pass
 
     def get_result_type(self) -> ParamType:
@@ -64,6 +65,8 @@ class UserParamExecutor(CommandParamExecutor):
         if not isinstance(message.channel, TextChannel):
             return
 
+        # TODO ce serait bien de stocker les min/max sur le param,
+        # mais comment bien gérer la doc selon si c'est un chiffre ou un string ?
         if len(value) < 3:
             self._error = "Le nom d'utilisateur doit faire au moins 3 caractères"
             return
