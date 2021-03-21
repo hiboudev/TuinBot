@@ -1,6 +1,6 @@
 from typing import List
 
-from database.connexion import DatabaseConnection
+from database.db_connexion import DatabaseConnection
 
 
 class DbAutoReaction:

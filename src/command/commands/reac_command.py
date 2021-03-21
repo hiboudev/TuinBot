@@ -8,7 +8,7 @@ from command.params.executors import UserParamExecutor, EmojiParamExecutor, Sing
 from command.params.params import CommandParam, ParamType
 from command.params.syntax import CommandSyntax
 from command.types import HookType
-from database.reaction import DbAutoReaction
+from database.db_reaction import DbAutoReaction
 
 
 class AutoReactionCommand(BaseCommand):
@@ -64,8 +64,10 @@ class AutoReactionCommand(BaseCommand):
         for reaction in reactions:
             cls._async(message.add_reaction(reaction))
 
+    # noinspection PyUnusedLocal
     @classmethod
-    def _add_reaction(cls, message: Message, user_executor: UserParamExecutor, emoji_executor: EmojiParamExecutor):
+    def _add_reaction(cls, message: Message, user_executor: UserParamExecutor,
+                      emoji_executor: EmojiParamExecutor):
         if cls._execute_db_bool_request(lambda:
                                         DbAutoReaction.add_auto_reaction(message.guild.id,
                                                                          message.author.id,
@@ -97,6 +99,7 @@ class AutoReactionCommand(BaseCommand):
                                         message):
             cls._reply(message, "OK, j'ai viré les réactions automatiques que ces sales tuins t'avaient mises !")
 
+    # noinspection PyUnusedLocal
     @classmethod
     def _list_reactions(cls, message: Message, user_executor: UserParamExecutor):
         reactions = DbAutoReaction.get_auto_reactions(message.guild.id,

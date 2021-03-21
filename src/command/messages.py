@@ -38,9 +38,7 @@ class HelpMessageBuilder:
 
                 params_syntax.append(param_display_name)
 
-            field_count += 1
-
-            add_bottom_margin = len(self._command.get_syntaxes()) - field_count > 2
+            add_bottom_margin = field_count < len(self._command.get_syntaxes()) - 2
 
             # add space at field bottom for better lisibility, it's thiner than an empty field
             embed.add_field(name=syntax.title, inline=True,
@@ -50,6 +48,8 @@ class HelpMessageBuilder:
                                 desc="\n".join(params_desc),
                                 margin="\n\u200B" if add_bottom_margin else "")
                             )
+
+            field_count += 1
 
             if field_count % 2 == 1:
                 embed.add_field(name="\u200B", value="\u200B", inline=True)

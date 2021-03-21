@@ -1,4 +1,6 @@
-from database.connexion import DatabaseConnection
+from typing import Union
+
+from database.db_connexion import DatabaseConnection
 
 
 class DbAutoSpoiler:
@@ -33,40 +35,39 @@ class DbAutoSpoiler:
 
             return cursor.rowcount > 0
 
-    @staticmethod
-    def remove_my_spoiler(guild_id: int, target_id: int) -> bool:
-        with DatabaseConnection() as cursor:
-            cursor.execute("""
-                                DELETE FROM
-                                    auto_spoiler
-                                WHERE
-                                    guild_id = %(guild_id)s
-                                AND
-                                    target_id = %(target_id)s
-                               """,
-                           {"guild_id": guild_id, "target_id": target_id})
+    # @staticmethod
+    # def remove_my_spoiler(guild_id: int, target_id: int) -> bool:
+    #     with DatabaseConnection() as cursor:
+    #         cursor.execute("""
+    #                             DELETE FROM
+    #                                 auto_spoiler
+    #                             WHERE
+    #                                 guild_id = %(guild_id)s
+    #                             AND
+    #                                 target_id = %(target_id)s
+    #                            """,
+    #                        {"guild_id": guild_id, "target_id": target_id})
+    #
+    #         return cursor.rowcount > 0
 
-            return cursor.rowcount > 0
-
     @staticmethod
-    def get_auto_spoiler(guild_id: int, user_id: int) -> bool:
+    def get_auto_spoiler_author(guild_id: int, target_id: int) -> Union[int, None]:
         """Doesn't delete the spoiler from database."""
         with DatabaseConnection() as cursor:
             cursor.execute("""
-                                SELECT EXISTS(
                                 SELECT
-                                    *
+                                    author_id
                                 FROM
                                     auto_spoiler
                                 WHERE
                                     guild_id=%(guild_id)s
                                 AND
-                                    target_id = %(user_id)s
-                                )
+                                    target_id = %(target_id)s
                                 """,
-                           {"guild_id": guild_id, "user_id": user_id})
+                           {"guild_id": guild_id, "target_id": target_id})
 
-            return cursor.fetchone()[0] == 1
+            result = cursor.fetchone()
+            return None if not result else result[0]
 
     @staticmethod
     def use_auto_spoiler(guild_id: int, user_id: int) -> bool:

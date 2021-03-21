@@ -1,13 +1,14 @@
 from typing import List
 
-from discord import Message, TextChannel
+from discord import Message, TextChannel, User
 
 from command.command_base import BaseCommand
 from command.params.application import ApplicationParams
 from command.params.executors import UserParamExecutor, SingleValueParamExecutor
+from command.params.params import CommandParam, ParamType, SingleValueParamConfig
 from command.params.syntax import CommandSyntax
 from command.types import HookType
-from database.spoiler import DbAutoSpoiler
+from database.db_spoiler import DbAutoSpoiler
 
 
 class AutoSpoilerCommand(BaseCommand):
@@ -22,6 +23,8 @@ class AutoSpoilerCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
+        info_param = CommandParam("info", "", ParamType.SINGLE_VALUE, SingleValueParamConfig("info"))
+
         syntaxes = [
             CommandSyntax("Ajoute un spoiler sur un tuin",
                           cls._add_spoiler,
@@ -32,6 +35,11 @@ class AutoSpoilerCommand(BaseCommand):
                           ApplicationParams.USER,
                           ApplicationParams.STOP
                           ),
+            CommandSyntax("Affiche les infos de spoiler d'un tuin",
+                          cls._display_spoiler_info,
+                          ApplicationParams.USER,
+                          info_param
+                          )
         ]
 
         return syntaxes
@@ -77,6 +85,7 @@ class AutoSpoilerCommand(BaseCommand):
         )
         await message.delete()
 
+    # noinspection PyUnusedLocal
     @classmethod
     def _add_spoiler(cls, message: Message, user_executor: UserParamExecutor):
         if cls._execute_db_bool_request(lambda:
@@ -98,5 +107,22 @@ class AutoSpoilerCommand(BaseCommand):
                                                                           user_executor.get_user().id
                                                                           ),
                                         message):
-            cls._reply(message,
-                       "Spoiler retiré de {} !".format(user_executor.get_user().display_name))
+            cls._reply(message, "Spoiler retiré de **{}** !".format(user_executor.get_user().display_name))
+
+    # noinspection PyUnusedLocal
+    @classmethod
+    def _display_spoiler_info(cls, message: Message, user_executor: UserParamExecutor,
+                              info_executor: SingleValueParamExecutor):
+        author_id = DbAutoSpoiler.get_auto_spoiler_author(message.guild.id, user_executor.get_user().id)
+
+        if author_id is None:
+            cls._reply(message, "Aucun spoiler sur **{}** !".format(user_executor.get_user().display_name))
+        else:
+            user: User = message.guild.get_member(author_id)
+
+            if not user:
+                cls._reply(message, "Oups ! Il semble qu'il y ait eu un soucis pour retrouver le tuin !")
+            else:
+                cls._reply(message,
+                           "**{}** a mis un spoiler sur **{}** !".format(user.display_name,
+                                                                         user_executor.get_user().display_name))

@@ -18,6 +18,7 @@ class ParamConfig:
     pass
 
 
+# TODO à priori il n'y a pas besoin de config pour ça, on peut utiliser le nom du param pour la valeur
 class SingleValueParamConfig(ParamConfig):
 
     def __init__(self, single_value: str):
