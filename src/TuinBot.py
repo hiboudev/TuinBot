@@ -1,26 +1,21 @@
-from discord import Client, Message, Intents, Game
+from discord import Intents
 
+from client.bot import TuinBot
 from command.command_base import Commands
 from command.commands.reac_command import AutoReactionCommand
 from command.commands.spoil_command import AutoSpoilerCommand
 from command.commands.tuin_command import TuinBotCommand
-from command.manager import CommandManager
 from data.properties import AppProperties
+
+IS_BETA = True
+PROPERTIES_PATH = "../data/bot.properties"
+BETA_PROPERTIES_PATH = "../data/bot-beta.properties"
+
+AppProperties.load(BETA_PROPERTIES_PATH if IS_BETA else PROPERTIES_PATH)
 
 Commands.set_command_list(TuinBotCommand,
                           AutoReactionCommand,
                           AutoSpoilerCommand)
-
-
-class TuinBot(Client):
-
-    async def on_ready(self):
-        print('Logged on as {0}!'.format(self.user))
-        await self.change_presence(activity=Game("!" + TuinBotCommand.name()))
-
-    async def on_message(self, message: Message):
-        CommandManager.manage_message(message, self)
-
 
 intents = Intents.default()
 intents.members = True

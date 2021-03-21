@@ -2,4 +2,5 @@
 _prepa/
 **/__pycache__/**
 **/bot.properties
+**/bot-beta.properties
 **/_target/**

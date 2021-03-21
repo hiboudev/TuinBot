@@ -30,8 +30,9 @@ class Command(ABC):
     def get_syntaxes(cls) -> List[CommandSyntax]:
         pass
 
+    @classmethod
     @abstractmethod
-    def execute(self, message: Message, command_params: List[str], client: Client):
+    def execute(cls, message: Message, command_params: List[str], client: Client):
         pass
 
     @classmethod

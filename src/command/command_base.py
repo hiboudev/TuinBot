@@ -22,15 +22,16 @@ class BaseCommand(Command, ABC):
     _min_params_count = None
     _max_params_count = None
 
-    def execute(self, message: Message, command_params: List[str], client: Client):
-        if not command_params or not self.get_syntaxes():
-            self._display_help(message)
+    @classmethod
+    def execute(cls, message: Message, command_params: List[str], client: Client):
+        if not command_params or not cls.get_syntaxes():
+            cls._display_help(message)
             return
 
-        syntaxes = self._get_sorted_syntaxes()
+        syntaxes = cls._get_sorted_syntaxes()
 
-        if len(command_params) < self._min_params_count or len(command_params) > self._max_params_count:
-            self._display_error(message, "Nombre de paramètres inatendu !")
+        if len(command_params) < cls._min_params_count or len(command_params) > cls._max_params_count:
+            cls._display_error(message, "Nombre de paramètres inatendu !")
             return
 
         """ Stores one executor by parameter index and parameter name,
@@ -64,11 +65,11 @@ class BaseCommand(Command, ABC):
                         syntax_is_valid = False
                         break
                     elif executor.get_result_type() == ParamResultType.INVALID:
-                        self._display_error(message, executor.get_error())
+                        cls._display_error(message, executor.get_error())
                         return
                 else:
                     if executor.get_result_type() == ParamResultType.INVALID:
-                        self._display_error(message, executor.get_error())
+                        cls._display_error(message, executor.get_error())
                         return
 
                 param_index += 1
@@ -78,7 +79,7 @@ class BaseCommand(Command, ABC):
                 return
 
         # No valid syntax nor giving error, can we reach this?
-        self._display_error(message, """Ha ! On dirait que le développeur n'avait pas prévu ça !
+        cls._display_error(message, """Ha ! On dirait que le développeur n'avait pas prévu ça !
 Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige. :wink:""")
 
     @classmethod

@@ -5,9 +5,9 @@ class AppProperties:
     _config: Properties
 
     @classmethod
-    def load(cls):
+    def load(cls, path: str):
         cls._config = Properties()
-        with open('../data/bot.properties', 'rb') as config_file:
+        with open(path, 'rb') as config_file:
             cls._config.load(config_file)
 
     @classmethod
@@ -29,6 +29,3 @@ class AppProperties:
     @classmethod
     def db_password(cls) -> str:
         return cls._config.get("db_password").data
-
-
-AppProperties.load()
