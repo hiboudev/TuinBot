@@ -4,8 +4,8 @@ from discord import Message, TextChannel, User
 
 from command.command_base import BaseCommand
 from command.params.application import ApplicationParams
-from command.params.executors import UserParamExecutor, SingleValueParamExecutor
-from command.params.params import CommandParam, ParamType, SingleValueParamConfig
+from command.params.executors import UserParamExecutor, FixedValueParamExecutor
+from command.params.params import CommandParam, ParamType
 from command.params.syntax import CommandSyntax
 from command.types import HookType
 from database.db_spoiler import DbAutoSpoiler
@@ -23,7 +23,7 @@ class AutoSpoilerCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
-        info_param = CommandParam("info", "", ParamType.SINGLE_VALUE, SingleValueParamConfig("info"))
+        info_param = CommandParam("info", "", ParamType.FIXED_VALUE)
 
         syntaxes = [
             CommandSyntax("Ajoute un spoiler sur un tuin",
@@ -35,7 +35,7 @@ class AutoSpoilerCommand(BaseCommand):
                           ApplicationParams.USER,
                           ApplicationParams.STOP
                           ),
-            CommandSyntax("Affiche les infos de spoiler d'un tuin",
+            CommandSyntax("Regarde quel tuin a mis un spoiler sur un tuin",
                           cls._display_spoiler_info,
                           ApplicationParams.USER,
                           info_param
@@ -99,7 +99,7 @@ class AutoSpoilerCommand(BaseCommand):
     # noinspection PyUnusedLocal
     @classmethod
     def _remove_spoiler(cls, message: Message, user_executor: UserParamExecutor,
-                        stop_executor: SingleValueParamExecutor):
+                        stop_executor: FixedValueParamExecutor):
         if cls._execute_db_bool_request(lambda:
                                         DbAutoSpoiler.remove_auto_spoiler(message.guild.id,
                                                                           message.author.id,
@@ -111,7 +111,7 @@ class AutoSpoilerCommand(BaseCommand):
     # noinspection PyUnusedLocal
     @classmethod
     def _display_spoiler_info(cls, message: Message, user_executor: UserParamExecutor,
-                              info_executor: SingleValueParamExecutor):
+                              info_executor: FixedValueParamExecutor):
         author_id = DbAutoSpoiler.get_auto_spoiler_author(message.guild.id, user_executor.get_user().id)
 
         if author_id is None:

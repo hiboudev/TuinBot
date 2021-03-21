@@ -4,7 +4,7 @@ from discord import Message
 
 from command.command_base import BaseCommand
 from command.params.application import ApplicationParams
-from command.params.executors import UserParamExecutor, EmojiParamExecutor, SingleValueParamExecutor
+from command.params.executors import UserParamExecutor, EmojiParamExecutor, FixedValueParamExecutor
 from command.params.params import CommandParam, ParamType
 from command.params.syntax import CommandSyntax
 from command.types import HookType
@@ -82,7 +82,7 @@ class AutoReactionCommand(BaseCommand):
     # noinspection PyUnusedLocal
     @classmethod
     def _remove_reaction(cls, message: Message, user_executor: UserParamExecutor,
-                         stop_executor: SingleValueParamExecutor):
+                         stop_executor: FixedValueParamExecutor):
         if cls._execute_db_bool_request(lambda:
                                         DbAutoReaction.remove_auto_reaction(message.guild.id,
                                                                             message.author.id,
@@ -92,7 +92,7 @@ class AutoReactionCommand(BaseCommand):
 
     # noinspection PyUnusedLocal
     @classmethod
-    def _remove_all_reactions(cls, message: Message, stop_executor: SingleValueParamExecutor):
+    def _remove_all_reactions(cls, message: Message, stop_executor: FixedValueParamExecutor):
         if cls._execute_db_bool_request(lambda:
                                         DbAutoReaction.remove_all_auto_reactions(message.guild.id,
                                                                                  message.author.id),

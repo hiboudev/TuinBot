@@ -29,13 +29,13 @@ class HelpMessageBuilder:
             params_desc = []
 
             for param in syntax.params:
-                param_is_variable = param.param_type != ParamType.SINGLE_VALUE
+                param_is_variable = param.param_type != ParamType.FIXED_VALUE
 
                 if param_is_variable:
                     param_display_name = "[%s]" % param.name
                     params_desc.append("**%s** : %s" % (param_display_name, param.description))
                 else:
-                    param_display_name = "%s" % param.single_value
+                    param_display_name = "%s" % param.name
 
                 params_syntax.append(param_display_name)
 

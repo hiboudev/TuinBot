@@ -3,7 +3,7 @@ from typing import Union, Dict, Type
 
 from discord import Message, TextChannel, User, Client
 
-from command.params.params import CommandParam, ParamResultType, IntParamConfig, ParamType, SingleValueParamConfig
+from command.params.params import CommandParam, ParamResultType, IntParamConfig, ParamType
 from utils.parsing_utils import ParsingUtils
 
 
@@ -53,7 +53,7 @@ class UserParamExecutor(CommandParamExecutor):
         # TODO ce serait bien de stocker les min/max sur le param,
         # mais comment bien gérer la doc selon si c'est un chiffre ou un string ?
         if len(value) < 3:
-            self._error = "Le nom d'utilisateur doit faire au moins 3 caractères"
+            self._error = "Le nom d'utilisateur doit faire au moins 3 caractères."
             return
 
         self._user = ParsingUtils.find_user(message.channel.members, value)
@@ -61,7 +61,7 @@ class UserParamExecutor(CommandParamExecutor):
         if self._user:
             self._result_type = ParamResultType.VALID
         else:
-            self._error = "Utilisateur introuvable"
+            self._error = "Utilisateur introuvable."
 
     def get_user(self) -> Union[User, None]:
         return self._user
@@ -88,7 +88,7 @@ class EmojiParamExecutor(CommandParamExecutor):
         if self._emoji:
             self._result_type = ParamResultType.VALID
         else:
-            self._error = "Emoji invalide"
+            self._error = "Emoji invalide."
 
     def get_emoji(self) -> Union[str, None]:
         return self._emoji
@@ -101,19 +101,16 @@ class EmojiParamExecutor(CommandParamExecutor):
         return True
 
 
-class SingleValueParamExecutor(CommandParamExecutor):
+class FixedValueParamExecutor(CommandParamExecutor):
 
     def set_value(self, value: str, message: Message, client: Client):
         print(self)
 
-        if self.param.config is None or not isinstance(self.param.config, SingleValueParamConfig):
-            raise Exception("Config not found!")
-
-        if value == self.param.config.single_value:
+        if value == self.param.name:
             self._is_input_format_valid = True
             self._result_type = ParamResultType.VALID
         else:
-            self._error = "Valeur invalide"
+            self._error = "Valeur invalide."
 
     @staticmethod
     def always_valid_input_format() -> bool:
@@ -136,7 +133,7 @@ class IntParamExecutor(CommandParamExecutor):
         if self.param.config.min_value <= self._int_value <= self.param.config.max_value:
             self._result_type = ParamResultType.VALID
         else:
-            self._error = "Valeur invalide"
+            self._error = "Valeur invalide."
 
     @staticmethod
     def always_valid_input_format() -> bool:
@@ -150,7 +147,7 @@ class ParamExecutorFactory:
     _executors_by_type: Dict[ParamType, Type[CommandParamExecutor]] = {
         ParamType.USER: UserParamExecutor,
         ParamType.EMOJI: EmojiParamExecutor,
-        ParamType.SINGLE_VALUE: SingleValueParamExecutor,
+        ParamType.FIXED_VALUE: FixedValueParamExecutor,
         ParamType.INT: IntParamExecutor
     }
 
