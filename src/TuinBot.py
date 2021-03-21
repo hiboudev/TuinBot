@@ -5,7 +5,7 @@ from command.commands.reac_command import AutoReactionCommand
 from command.commands.spoil_command import AutoSpoilerCommand
 from command.commands.tuin_command import TuinBotCommand
 from command.manager import CommandManager
-from properties import AppProperties
+from data.properties import AppProperties
 
 Commands.set_command_list(TuinBotCommand,
                           AutoReactionCommand,
@@ -29,4 +29,4 @@ intents.typing = True
 # AppProperties
 
 bot = TuinBot(intents=intents)
-bot.run(AppProperties.token())
+bot.run(AppProperties.bot_token())

@@ -11,8 +11,8 @@ class AppProperties:
             cls._config.load(config_file)
 
     @classmethod
-    def token(cls) -> str:
-        return cls._config.get("token").data
+    def bot_token(cls) -> str:
+        return cls._config.get("bot_token").data
 
     @classmethod
     def db_name(cls) -> str:
