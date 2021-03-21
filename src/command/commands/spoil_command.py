@@ -54,7 +54,6 @@ class AutoSpoilerCommand(BaseCommand):
 
     @classmethod
     def execute_hook(cls, message: Message):
-        # TODO voir à ne rien faire si le message contient un embed
         if message.content.startswith("!"):
             return
 

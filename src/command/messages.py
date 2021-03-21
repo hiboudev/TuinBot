@@ -19,7 +19,8 @@ class HelpMessageBuilder:
 
     def build(self) -> Embed:
         embed = Embed(title="Commande __{name}__".format(name=self._command.name()),
-                      description="*%s*\n\u200B" % self._command.description())
+                      description="*%s*\n\u200B" % self._command.description(),
+                      color=0x15659e)
 
         field_count = 0
 
