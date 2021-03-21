@@ -46,7 +46,6 @@ class UserParamExecutor(CommandParamExecutor):
         self._user = None
 
     def set_value(self, value: str, message: Message, client: Client):
-        print(self)
         if not isinstance(message.channel, TextChannel):
             return
 
@@ -81,8 +80,6 @@ class EmojiParamExecutor(CommandParamExecutor):
         self._emoji = None
 
     def set_value(self, value: str, message: Message, client: Client):
-        print(self)
-
         self._emoji = ParsingUtils.get_emoji(value, client)
 
         if self._emoji:
@@ -104,8 +101,6 @@ class EmojiParamExecutor(CommandParamExecutor):
 class FixedValueParamExecutor(CommandParamExecutor):
 
     def set_value(self, value: str, message: Message, client: Client):
-        print(self)
-
         if value == self.param.name:
             self._is_input_format_valid = True
             self._result_type = ParamResultType.VALID

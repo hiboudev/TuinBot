@@ -75,7 +75,7 @@ class AutoSpoilerCommand(BaseCommand):
             content = "*" + message.content + "*"
 
         await message.channel.send(
-            content=":popcorn: Avis à la population ! **{}** va faire une déclaration ! :popcorn:\n\n{}".format(
+            content=":popcorn: Avis à la population ! Le tuin **{}** va faire une déclaration ! :popcorn:\n\n{}".format(
                 message.author.display_name,
                 ":point_right: \t||\u00A0" + content + "\u00A0||" if content else ""
             ),

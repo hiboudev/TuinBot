@@ -1,10 +1,10 @@
 import mysql.connector
 
-# Doc mysql python : https://python.doctor/page-database-data-base-donnees-query-sql-mysql-postgre-sqlite
 from data.properties import AppProperties
 
 
 class DatabaseConnection:
+# Doc mysql python : https://python.doctor/page-database-data-base-donnees-query-sql-mysql-postgre-sqlite
 
     def __enter__(self):
         self.conn = mysql.connector.connect(
