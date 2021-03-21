@@ -84,7 +84,6 @@ class AutoSpoilerCommand(BaseCommand):
         )
         await message.delete()
 
-    # noinspection PyUnusedLocal
     @classmethod
     def _add_spoiler(cls, message: Message, user_executor: UserParamExecutor):
         if cls._execute_db_bool_request(lambda:

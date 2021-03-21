@@ -64,7 +64,6 @@ class AutoReactionCommand(BaseCommand):
         for reaction in reactions:
             cls._async(message.add_reaction(reaction))
 
-    # noinspection PyUnusedLocal
     @classmethod
     def _add_reaction(cls, message: Message, user_executor: UserParamExecutor,
                       emoji_executor: EmojiParamExecutor):
@@ -99,7 +98,6 @@ class AutoReactionCommand(BaseCommand):
                                         message):
             cls._reply(message, "OK, j'ai viré les réactions automatiques que ces sales tuins t'avaient mises !")
 
-    # noinspection PyUnusedLocal
     @classmethod
     def _list_reactions(cls, message: Message, user_executor: UserParamExecutor):
         reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
