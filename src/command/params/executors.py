@@ -21,7 +21,7 @@ class CommandParamExecutor:
 
     @staticmethod
     @abstractmethod
-    def always_valid_input_format() -> bool:
+    def always_validate_input_format() -> bool:
         """
         Indicate if this object will always accept input even if post-processing
         finds it's not valid.
@@ -67,7 +67,7 @@ class UserParamExecutor(CommandParamExecutor):
         return self._user
 
     @staticmethod
-    def always_valid_input_format() -> bool:
+    def always_validate_input_format() -> bool:
         return True
 
     def is_input_format_valid(self) -> bool:
@@ -94,7 +94,7 @@ class EmojiParamExecutor(CommandParamExecutor):
         return self._emoji
 
     @staticmethod
-    def always_valid_input_format() -> bool:
+    def always_validate_input_format() -> bool:
         return True
 
     def is_input_format_valid(self) -> bool:
@@ -113,7 +113,7 @@ class FixedValueParamExecutor(CommandParamExecutor):
             self._error = "Valeur invalide."
 
     @staticmethod
-    def always_valid_input_format() -> bool:
+    def always_validate_input_format() -> bool:
         return False
 
 
@@ -136,7 +136,7 @@ class IntParamExecutor(CommandParamExecutor):
             self._error = "Valeur invalide."
 
     @staticmethod
-    def always_valid_input_format() -> bool:
+    def always_validate_input_format() -> bool:
         return False
 
     def get_int(self) -> int:

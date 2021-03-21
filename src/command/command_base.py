@@ -60,7 +60,7 @@ class BaseCommand(Command, ABC):
 
                 syntax_executors.append(executor)
 
-                if not executor.always_valid_input_format():
+                if not executor.always_validate_input_format():
                     if not executor.is_input_format_valid():
                         syntax_is_valid = False
                         break
@@ -103,7 +103,7 @@ Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige. :wink
     def _get_sorted_syntaxes(cls) -> List[CommandSyntax]:
         if cls._sorted_syntaxes is None:
             cls._sorted_syntaxes = cls.get_syntaxes().copy()
-            Utils.multisort(cls._sorted_syntaxes, (("always_valid_input_format", False), ("param_count", True)))
+            Utils.multisort(cls._sorted_syntaxes, (("_always_validate_input_format", False), ("param_count", True)))
 
         return cls._sorted_syntaxes
 
