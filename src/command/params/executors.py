@@ -118,7 +118,10 @@ class FixedValueParamExecutor(CommandParamExecutor):
 
 
 class IntParamExecutor(CommandParamExecutor):
-    _int_value = None
+
+    def __init__(self, param: CommandParam):
+        super().__init__(param)
+        self._int_value = None
 
     def set_value(self, value: str, message: Message, client: Client):
         if self.param.config is None or not isinstance(self.param.config, IntParamConfig):
