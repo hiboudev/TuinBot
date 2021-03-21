@@ -34,10 +34,10 @@ class BaseCommand(Command, ABC):
             self._display_error(message, "Nombre de paramètres inatendu !")
             return
 
-        """ Stores one executor by parameter index and parameter type,
+        """ Stores one executor by parameter index and parameter name,
         so we parse each parameter only once.
         """
-        all_executors: Dict[int, Dict[ParamType]] = {}
+        all_executors: Dict[int, Dict[str]] = {}
 
         for syntax in syntaxes:
             if len(command_params) != len(syntax.params):
@@ -54,9 +54,9 @@ class BaseCommand(Command, ABC):
                 if param.param_type not in all_executors[param_index]:
                     executor = ParamExecutorFactory.get_executor(param)
                     executor.set_value(command_params[param_index], message, client)
-                    all_executors[param_index][param.param_type] = executor
+                    all_executors[param_index][param.name] = executor
                 else:
-                    executor = all_executors[param_index][param.param_type]
+                    executor = all_executors[param_index][param.name]
 
                 syntax_executors.append(executor)
 
