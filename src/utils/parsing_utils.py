@@ -26,6 +26,9 @@ class ParsingUtils:
         matches = []
 
         for user in users:
+            if user.bot:
+                continue
+
             display_name = unidecode(user.display_name.lower())
             username = unidecode(user.name.lower())
 
