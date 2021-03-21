@@ -1,6 +1,6 @@
 import shlex
 
-from discord import Message, Client
+from discord import Message, Client, TextChannel
 
 from command.command_base import Commands
 from command.factory import CommandFactory
@@ -18,7 +18,8 @@ class CommandManager:
         if not message.guild:
             return
 
-        # TODO bloquer tout ce qui vient pas d'un TextChannel ?
+        if not isinstance(message.channel, TextChannel):
+            return False
 
         if not cls._parse_command(message, client):
             # we don't apply hooks on a command message

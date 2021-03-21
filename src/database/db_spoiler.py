@@ -69,9 +69,11 @@ class DbAutoSpoiler:
             result = cursor.fetchone()
             return None if not result else result[0]
 
-    @staticmethod
-    def use_auto_spoiler(guild_id: int, user_id: int) -> bool:
+    @classmethod
+    def use_auto_spoiler(cls, guild_id: int, target_id: int) -> Union[int, None]:
         """Delete the spoiler from database."""
+
+        author_id = cls.get_auto_spoiler_author(guild_id, target_id)
 
         with DatabaseConnection() as cursor:
             cursor.execute("""
@@ -82,6 +84,6 @@ class DbAutoSpoiler:
                                 AND
                                     target_id = %(user_id)s
                                 """,
-                           {"guild_id": guild_id, "user_id": user_id})
+                           {"guild_id": guild_id, "user_id": target_id})
 
-            return cursor.rowcount > 0
+            return author_id

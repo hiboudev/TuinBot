@@ -1,6 +1,6 @@
 from typing import List
 
-from discord import Message, TextChannel, User
+from discord import Message, TextChannel, User, Embed
 
 from command.command_base import BaseCommand
 from command.params.application import ApplicationParams
@@ -54,34 +54,53 @@ class AutoSpoilerCommand(BaseCommand):
 
     @classmethod
     def execute_hook(cls, message: Message):
-        if message.content.startswith("!"):
+        if not cls._can_execute_hook(message):
             return
 
-        if DbAutoSpoiler.use_auto_spoiler(message.guild.id,
-                                          message.author.id):
-            cls._async(cls._execute_hook_async(message))
+        spoil_author_id = DbAutoSpoiler.use_auto_spoiler(message.guild.id,
+                                                         message.author.id)
+
+        if spoil_author_id:
+            cls._async(cls._execute_hook_async(message, spoil_author_id))
 
     @staticmethod
-    async def _execute_hook_async(message: Message):
-        if not isinstance(message.channel, TextChannel):
-            return
+    def _can_execute_hook(message: Message) -> bool:
+        # Don't apply this hook on another bot command.
+        if message.content.startswith("!"):
+            return False
 
-        attachment = None
-        if message.attachments:
-            attachment = await message.attachments[0].to_file(use_cached=True, spoiler=True)
+        # With Embed the link disapears, we need to add a field but it's too big.
+        # So we bypass hook.
+        if "http" in message.content:
+            return False
 
+        # Attachements other than images are not well managed in embeds, so don't process.
+        if message.attachments and not message.attachments[0].width:
+            return False
+
+        return True
+
+    @staticmethod
+    async def _execute_hook_async(message: Message, author_id: int):
         content = message.content
-        if message.content and "http" not in message.content:
-            content = "*" + message.content + "*"
 
-        await message.channel.send(
-            content=":popcorn: Avis à la population ! Le tuin **{}** va faire une déclaration ! :popcorn:\n\n{}".format(
+        embed = Embed(
+            title=":popcorn:\u00A0\u00A0\u00A0\u00A0Avis à la population !\u00A0\u00A0\u00A0\u00A0:popcorn:",
+            description="Le tuin **{}** va faire une déclaration ! :partying_face:\n\n{}".format(
                 message.author.display_name,
-                ":point_right: \t||\u00A0" + content + "\u00A0||" if content else ""
-            ),
-            # embed=None if not message.embeds else message.embeds[0],
-            file=attachment
-        )
+                ":point_right: \u00A0\u00A0\u00A0\u00A0||\u00A0\u00A0*"
+                + content + "*\u00A0\u00A0||" if content else ""
+            ))
+
+        author = message.guild.get_member(author_id)
+        if author:
+            embed.set_footer(text="Spoiler trollé par le tuin {}".format(author.display_name))
+
+        # If an image is uploaded with message, adds it to embed.
+        if message.attachments and message.attachments[0].width:
+            embed.set_image(url=message.attachments[0].proxy_url)
+
+        await message.channel.send(embed=embed)
         await message.delete()
 
     @classmethod
