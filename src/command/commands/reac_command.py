@@ -1,15 +1,14 @@
-import asyncio
 from typing import List
 
 from discord import Message
 
 from command.command_base import BaseCommand
 from command.params.application import ApplicationParams
-from command.params.executors import UserParamExecutor, EmojiParamExecutor
+from command.params.executors import UserParamExecutor, EmojiParamExecutor, SingleValueParamExecutor
 from command.params.params import CommandParam, ParamType
 from command.params.syntax import CommandSyntax
 from command.types import HookType
-from database.database import Database
+from database.reaction import DbAutoReaction
 
 
 class AutoReactionCommand(BaseCommand):
@@ -41,7 +40,7 @@ class AutoReactionCommand(BaseCommand):
                           cls._list_reactions,
                           ApplicationParams.USER,
                           ),
-            CommandSyntax("Enlève toutes les réactions que les sales tuins t'ont mis",
+            CommandSyntax("Enlève toutes les réactions que les sales tuins t'ont mises",
                           cls._remove_all_reactions,
                           ApplicationParams.STOP,
                           )
@@ -59,48 +58,49 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     def execute_hook(cls, message: Message):
-        reactions = Database.get_auto_reactions(message.guild.id,
-                                                message.author.id)
+        reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
+                                                      message.author.id)
 
         for reaction in reactions:
-            asyncio.create_task(message.add_reaction(reaction))
+            cls._async(message.add_reaction(reaction))
 
     @classmethod
     def _add_reaction(cls, message: Message, user_executor: UserParamExecutor, emoji_executor: EmojiParamExecutor):
         if cls._execute_db_bool_request(lambda:
-                                        Database.add_auto_reaction(message.guild.id,
-                                                                   message.author.id,
-                                                                   user_executor.get_user().id,
-                                                                   emoji_executor.get_emoji()
-                                                                   ),
+                                        DbAutoReaction.add_auto_reaction(message.guild.id,
+                                                                         message.author.id,
+                                                                         user_executor.get_user().id,
+                                                                         emoji_executor.get_emoji()
+                                                                         ),
                                         message):
             cls._reply(message,
-                       "Réaction automatique %s ajoutée à %s !" % (
-                           emoji_executor.get_emoji(), user_executor.get_user().name))
+                       "Réaction automatique %s ajoutée à **%s** !" % (
+                           emoji_executor.get_emoji(), user_executor.get_user().display_name))
 
     # noinspection PyUnusedLocal
     @classmethod
-    def _remove_reaction(cls, message: Message, user_executor: UserParamExecutor, emoji_executor: EmojiParamExecutor):
+    def _remove_reaction(cls, message: Message, user_executor: UserParamExecutor,
+                         stop_executor: SingleValueParamExecutor):
         if cls._execute_db_bool_request(lambda:
-                                        Database.remove_auto_reaction(message.guild.id,
-                                                                      message.author.id,
-                                                                      user_executor.get_user().id),
+                                        DbAutoReaction.remove_auto_reaction(message.guild.id,
+                                                                            message.author.id,
+                                                                            user_executor.get_user().id),
                                         message):
-            cls._reply(message, "Réaction automatique retirée de %s !" % user_executor.get_user().name)
+            cls._reply(message, "Réaction automatique retirée de **%s** !" % user_executor.get_user().display_name)
 
     # noinspection PyUnusedLocal
     @classmethod
-    def _remove_all_reactions(cls, message: Message, user_executor: UserParamExecutor):
+    def _remove_all_reactions(cls, message: Message, stop_executor: SingleValueParamExecutor):
         if cls._execute_db_bool_request(lambda:
-                                        Database.remove_all_auto_reactions(message.guild.id,
-                                                                           message.author.id),
+                                        DbAutoReaction.remove_all_auto_reactions(message.guild.id,
+                                                                                 message.author.id),
                                         message):
             cls._reply(message, "OK, j'ai viré les réactions automatiques que ces sales tuins t'avaient mises !")
 
     @classmethod
     def _list_reactions(cls, message: Message, user_executor: UserParamExecutor):
-        reactions = Database.get_auto_reactions(message.guild.id,
-                                                user_executor.get_user().id)
+        reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
+                                                      user_executor.get_user().id)
         cls._reply(message,
-                   "%s a %s réaction(s) automatique(s) : %s" % (
-                       user_executor.get_user().name, len(reactions), " ".join(reactions)))
+                   "**%s** a %s réaction(s) automatique(s) : %s" % (
+                       user_executor.get_user().display_name, len(reactions), " ".join(reactions)))

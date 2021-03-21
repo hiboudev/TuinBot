@@ -1,7 +1,7 @@
 import asyncio
 import sys
 from abc import ABC, abstractmethod
-from typing import List, Dict, Callable, Type, Union, Iterable
+from typing import List, Dict, Callable, Type, Union, Iterable, Coroutine
 
 from discord import Message, Client, Embed
 
@@ -141,6 +141,10 @@ Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige :wink:
 
         await response.delete(delay=delay or cls._delete_delay)
         await message.delete(delay=delay or cls._delete_delay)
+
+    @staticmethod
+    def _async(coro: Coroutine):
+        asyncio.create_task(coro)
 
     @classmethod
     def get_help(cls) -> Union[Embed, str]:

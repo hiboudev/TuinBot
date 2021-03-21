@@ -11,6 +11,8 @@ class CommandManager:
 
     @classmethod
     def manage_message(cls, message: Message, client: Client):
+        # print(message.content)
+        # print(message.embeds)
         if message.author.bot:
             return
 
@@ -18,24 +20,26 @@ class CommandManager:
         if not message.guild:
             return
 
-        cls._parse_command(message, client)
+        # TODO bloquer tout ce qui vient pas d'un TextChannel ?
 
-        for hook in Commands.get_hooks(HookType.MESSAGE):
-            hook.execute_hook(message)
+        if not cls._parse_command(message, client):
+            # we don't apply hooks on a command message
+            for hook in Commands.get_hooks(HookType.MESSAGE):
+                hook.execute_hook(message)
 
     @staticmethod
-    def _parse_command(message: Message, client: Client):
+    def _parse_command(message: Message, client: Client) -> bool:
         content = message.content
 
         # Dunno when, but we can have a zero length message (maybe when a new user join the channel ?)
         if not content:
-            return
+            return False
 
         if content[0] != "!":
-            return
+            return False
 
         if len(content) < 2:
-            return
+            return False
 
         # Use quotes to insert spaces in a parameter value
         command_split = shlex.split(content[1:])
@@ -44,6 +48,8 @@ class CommandManager:
         command = CommandFactory.get_command(command_name)
 
         if not command:
-            return
+            return False
 
         command.execute(message, command_split[1:], client)
+
+        return True

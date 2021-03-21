@@ -1,5 +1,7 @@
 # from __future__ import annotations
-from typing import List
+from typing import List, Union
+
+from discord import Embed
 
 from command.command_base import BaseCommand, Commands
 from command.params.syntax import CommandSyntax
@@ -20,11 +22,15 @@ class TuinBotCommand(BaseCommand):
         return []
 
     @classmethod
-    def get_help(cls) -> str:
-        help_mess = "Commandes disponibles :"
+    def get_help(cls) -> Union[Embed, str]:
+        desc = "```apache"
 
         for command in Commands.LIST:
-            help_mess += "\n**!%s** : %s" % (command.name(), command.description())
-        help_mess += "\nTape une commande pour voir sa page d'aide."
+            desc += "\n!%s : %s" % (command.name(), command.description())
+
+        desc += "```\nTape une commande pour voir sa page d'aide."
+
+        help_mess = Embed(title="Commandes disponibles pour les tuins",
+                          description=desc)
 
         return help_mess

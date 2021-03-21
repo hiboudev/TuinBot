@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from typing import Callable, List
 
-from command.params.executors import ParamExecutorFactory
+from discord import Message
+
+from command.params.executors import ParamExecutorFactory, CommandParamExecutor
 from command.params.params import CommandParam
 
 
 class CommandSyntax:
 
-    def __init__(self, title: str, callback: Callable, *params: CommandParam):
+    def __init__(self, title: str, callback: Callable[[Message, *CommandParamExecutor], None], *params: CommandParam):
         self.title = title
         self.params = params
         self.callback = callback
