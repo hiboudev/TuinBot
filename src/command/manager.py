@@ -11,8 +11,6 @@ class CommandManager:
 
     @classmethod
     def manage_message(cls, message: Message, client: Client):
-        # print(message.content)
-        # print(message.embeds)
         if message.author.bot:
             return
 

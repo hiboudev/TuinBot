@@ -7,14 +7,16 @@ from command.commands.spoil_command import AutoSpoilerCommand
 from command.commands.tuin_command import TuinBotCommand
 from command.manager import CommandManager
 
-Commands.set_command_list(TuinBotCommand, AutoReactionCommand, AutoSpoilerCommand)
+Commands.set_command_list(TuinBotCommand,
+                          AutoReactionCommand,
+                          AutoSpoilerCommand)
 
 
 class TuinBot(Client):
 
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
-        await self.change_presence(activity=Game("!tuin"))
+        await self.change_presence(activity=Game("!" + TuinBotCommand.name()))
 
     async def on_message(self, message: Message):
         CommandManager.manage_message(message, self)
@@ -32,6 +34,7 @@ token=XXX
 config = Properties()
 with open('bot.properties', 'rb') as config_file:
     config.load(config_file)
+token = config.get("token").data
 
 bot = TuinBot(intents=intents)
-bot.run(config.get("token").data)
+bot.run(token)

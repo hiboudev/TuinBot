@@ -29,8 +29,7 @@ class BaseCommand(Command, ABC):
 
         syntaxes = self._get_sorted_syntaxes()
 
-        if len(command_params) < self._min_params_count \
-                or len(command_params) > self._max_params_count:
+        if len(command_params) < self._min_params_count or len(command_params) > self._max_params_count:
             self._display_error(message, "Nombre de paramètres inatendu !")
             return
 
@@ -53,8 +52,8 @@ class BaseCommand(Command, ABC):
 
                 if param.name not in all_executors[param_index]:
                     executor = ParamExecutorFactory.get_executor(param)
-                    executor.set_value(command_params[param_index], message, client)
                     all_executors[param_index][param.name] = executor
+                    executor.set_value(command_params[param_index], message, client)
                 else:
                     executor = all_executors[param_index][param.name]
 
@@ -78,7 +77,7 @@ class BaseCommand(Command, ABC):
                 syntax.callback(message, *syntax_executors)  # [:len(syntax.params)])
                 return
 
-        # No valid syntax, can we reach this?
+        # No valid syntax nor giving error, can we reach this?
         self._display_error(message, """Ha ! On dirait que le développeur n'avait pas prévu ça !
 Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige. :wink:""")
 
@@ -130,7 +129,7 @@ Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige. :wink
 
     @classmethod
     def _reply(cls, message: Message, content: Union[Embed, str], delete_delay: int = None):
-        asyncio.create_task(cls._reply_and_delete(message, content, delete_delay))
+        cls._async(cls._reply_and_delete(message, content, delete_delay))
 
     @classmethod
     async def _reply_and_delete(cls, message: Message, content: Union[Embed, str], delay: int = None):
@@ -148,7 +147,7 @@ Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige. :wink
 
     @classmethod
     def get_help(cls) -> Union[Embed, str]:
-        return HelpMessageBuilder(cls).build()
+        return HelpMessageBuilder.build(cls)
 
 
 class Commands:
