@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="Tuin Bot" default="compile" basedir=".">
+   <!--propertyfile file="build.properties">
+      <entry key="build.number" type="int" operation="+" value="1"/>
+   </propertyfile>
+
+   <property file="build.properties"/>
+
+   <property name="build.version" value="${project.version}-b${build.number}"></property-->
+
+   <property name="targetDir" value="./_target/bin"></property>
+   <property name="srcDir" value="./src"></property>
+
+   <fileset id="files_src" dir="${srcDir}" excludes="**/__pycache__/**" />
+
+   <target name="compile">
+      <copy todir="${targetDir}">
+         <fileset refid="files_src"/>
+      </copy>
+   </target>
+</project>
