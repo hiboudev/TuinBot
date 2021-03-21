@@ -1,15 +1,17 @@
 import mysql.connector
 
-
 # Doc mysql python : https://python.doctor/page-database-data-base-donnees-query-sql-mysql-postgre-sqlite
+from properties import AppProperties
+
+
 class DatabaseConnection:
 
     def __enter__(self):
         self.conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="tuinbot"
+            host=AppProperties.db_host(),
+            user=AppProperties.db_user(),
+            password=AppProperties.db_password(),
+            database=AppProperties.db_name()
         )
 
         return self.conn.cursor()

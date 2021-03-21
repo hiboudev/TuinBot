@@ -1,11 +1,11 @@
 from discord import Client, Message, Intents, Game
-from jproperties import Properties
 
 from command.command_base import Commands
 from command.commands.reac_command import AutoReactionCommand
 from command.commands.spoil_command import AutoSpoilerCommand
 from command.commands.tuin_command import TuinBotCommand
 from command.manager import CommandManager
+from properties import AppProperties
 
 Commands.set_command_list(TuinBotCommand,
                           AutoReactionCommand,
@@ -26,15 +26,7 @@ intents = Intents.default()
 intents.members = True
 intents.typing = True
 # intents.presences = True
-
-"""
-Put your bot token in a file "bot.properties" :
-token=XXX 
-"""
-config = Properties()
-with open('bot.properties', 'rb') as config_file:
-    config.load(config_file)
-token = config.get("token").data
+# AppProperties
 
 bot = TuinBot(intents=intents)
-bot.run(token)
+bot.run(AppProperties.token())
