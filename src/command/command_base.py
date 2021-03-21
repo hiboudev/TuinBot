@@ -51,7 +51,7 @@ class BaseCommand(Command, ABC):
                 if param_index not in all_executors:
                     all_executors[param_index] = {}
 
-                if param.param_type not in all_executors[param_index]:
+                if param.name not in all_executors[param_index]:
                     executor = ParamExecutorFactory.get_executor(param)
                     executor.set_value(command_params[param_index], message, client)
                     all_executors[param_index][param.name] = executor
