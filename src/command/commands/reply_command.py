@@ -6,10 +6,9 @@ from command.command_base import BaseCommand
 from command.messages import Messages
 from command.params.application import ApplicationParams
 from command.params.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
-from command.params.params import CommandParam, ParamType
 from command.params.syntax import CommandSyntax
 from command.types import HookType
-from database.db_reply import DbAutoReply
+from database.db_reply import DbAutoReply, AutoReply
 
 
 class ReplyMessageCommand(BaseCommand):
@@ -29,7 +28,7 @@ class ReplyMessageCommand(BaseCommand):
             CommandSyntax("Enregistre un message",
                           cls._add_reply,
                           ApplicationParams.USER,
-                          CommandParam("texte", "Le texte, entre guillemets.", ParamType.TEXT)
+                          ApplicationParams.SENTENCE
                           ),
             CommandSyntax("Retire ton message",
                           cls._remove_reply,
@@ -107,14 +106,18 @@ class ReplyMessageCommand(BaseCommand):
         messages = DbAutoReply.use_auto_replys(message.guild.id, message.author.id)
 
         if messages:
-            for text_message in messages:
-                author = message.guild.get_member(text_message.author_id)
+            cls._async(cls._execute_hook_async(message, messages))
 
-                embed = Messages.get_hook_embed(
-                    description="{} <@{}>".format(text_message.message, message.author.id)
-                )
+    @classmethod
+    async def _execute_hook_async(cls, message: Message, messages: List[AutoReply]):
+        for text_message in messages:
+            author = message.guild.get_member(text_message.author_id)
 
-                if author:
-                    embed.set_footer(text="Signé {}".format(author.display_name))
+            embed = Messages.get_hook_embed(
+                description="{} <@{}>".format(text_message.message, message.author.id)
+            )
 
-                cls._reply(message, embed)
+            if author:
+                embed.set_footer(text="Signé {}".format(author.display_name))
+
+            await message.reply(embed=embed)

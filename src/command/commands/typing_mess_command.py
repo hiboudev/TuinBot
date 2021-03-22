@@ -29,7 +29,7 @@ class TypingMessageCommand(BaseCommand):
             CommandSyntax("Enregistre un message",
                           cls._add_typing_message,
                           ApplicationParams.USER,
-                          CommandParam("texte", "Le texte, entre guillemets.", ParamType.TEXT)
+                          ApplicationParams.SENTENCE
                           ),
             CommandSyntax("Retire ton message",
                           cls._remove_typing_message,
