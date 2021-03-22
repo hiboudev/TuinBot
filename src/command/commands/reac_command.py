@@ -103,5 +103,10 @@ class AutoReactionCommand(BaseCommand):
         reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
                                                       message.author.id)
 
+        if reactions:
+            cls._async(cls._execute_hook_async(message, reactions))
+
+    @classmethod
+    async def _execute_hook_async(cls, message: Message, reactions: List[str]):
         for reaction in reactions:
-            cls._async(message.add_reaction(reaction))
+            await message.add_reaction(reaction)
