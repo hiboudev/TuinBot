@@ -5,9 +5,9 @@ from typing import Union
 from discord import Message, Client, TextChannel, User, Member
 from discord.abc import Messageable
 
-from command.command_base import Commands
-from command.factory import CommandFactory
-from command.types import HookType
+from core.command.command_base import Commands
+from core.command.factory import CommandFactory
+from core.command.types import HookType
 
 
 class CommandManager:

@@ -6,7 +6,7 @@ from discord import User, Client
 from emoji import emoji_lis
 from unidecode import unidecode
 
-from utils.utils import Utils
+from core.utils.utils import Utils
 
 
 @dataclass

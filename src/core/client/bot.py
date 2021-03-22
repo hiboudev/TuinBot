@@ -4,10 +4,10 @@ from typing import Union
 from discord import Client, Game, Message, User, Member
 from discord.abc import Messageable
 
-from command.manager import CommandManager
+from core.command.manager import CommandManager
 
 
-class TuinBot(Client):
+class DiscordBot(Client):
 
     def __init__(self, activity_name: str = None, **options):
         super().__init__(**options)

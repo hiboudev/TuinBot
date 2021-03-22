@@ -1,13 +1,13 @@
 from discord import Intents
 
-from client.bot import TuinBot
-from command.command_base import Commands
-from command.commands.reac_command import AutoReactionCommand
-from command.commands.reply_command import ReplyMessageCommand
-from command.commands.spoil_command import AutoSpoilerCommand
-from command.commands.tuin_command import TuinBotCommand
-from command.commands.typing_mess_command import TypingMessageCommand
-from data.properties import AppProperties
+from core.client.bot import DiscordBot
+from core.command.command_base import Commands
+from application.commands.reac_command import AutoReactionCommand
+from application.commands.reply_command import ReplyMessageCommand
+from application.commands.spoil_command import AutoSpoilerCommand
+from application.commands.tuin_command import TuinBotCommand
+from application.commands.typing_mess_command import TypingMessageCommand
+from core.data.properties import AppProperties
 
 IS_BETA = True
 
@@ -28,5 +28,5 @@ intents.typing = True
 # intents.presences = True
 # AppProperties
 
-bot = TuinBot(activity_name=TuinBotCommand.name(), intents=intents)
+bot = DiscordBot(activity_name=TuinBotCommand.name(), intents=intents)
 bot.run(AppProperties.bot_token())

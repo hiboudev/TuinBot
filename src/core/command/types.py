@@ -4,7 +4,7 @@ from typing import List, Union
 
 from discord import Message, Client, Embed, TextChannel, Member
 
-from command.params.syntax import CommandSyntax
+from core.param.syntax import CommandSyntax
 
 
 class HookType(Enum):

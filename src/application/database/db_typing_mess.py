@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Union, List
 
-from database.db_connexion import DatabaseConnection
+from application.database.db_connexion import DatabaseConnection
 
 
 @dataclass

@@ -2,8 +2,8 @@ from typing import List, Union
 
 from discord import Embed
 
-from command.command_base import BaseCommand, Commands
-from command.params.syntax import CommandSyntax
+from core.command.command_base import BaseCommand, Commands
+from core.param.syntax import CommandSyntax
 
 
 class TuinBotCommand(BaseCommand):

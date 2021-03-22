@@ -4,8 +4,8 @@ from typing import Callable, List
 
 from discord import Message
 
-from command.params.executors import ParamExecutorFactory, CommandParamExecutor
-from command.params.params import CommandParam
+from core.param.executors import ParamExecutorFactory, CommandParamExecutor
+from core.param.params import CommandParam
 
 
 class CommandSyntax:

@@ -3,8 +3,8 @@ from typing import Union, Dict, Type
 
 from discord import Message, TextChannel, User, Client
 
-from command.params.params import CommandParam, ParamResultType, IntParamConfig, ParamType
-from utils.parsing_utils import ParsingUtils
+from core.param.params import CommandParam, ParamResultType, IntParamConfig, ParamType
+from core.utils.parsing_utils import ParsingUtils
 
 
 class CommandParamExecutor:

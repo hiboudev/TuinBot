@@ -1,6 +1,6 @@
 import mysql.connector
 
-from data.properties import AppProperties
+from core.data.properties import AppProperties
 
 
 class DatabaseConnection:

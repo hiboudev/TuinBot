@@ -5,12 +5,12 @@ from typing import List, Dict, Callable, Type, Union, Iterable, Coroutine
 
 from discord import Message, Client, Embed
 
-from command.messages import HelpMessageBuilder, Messages
-from command.params.executors import ParamExecutorFactory
-from command.params.params import ParamResultType
-from command.params.syntax import CommandSyntax
-from command.types import Command, HookType
-from utils.utils import Utils
+from core.message.messages import HelpMessageBuilder, Messages
+from core.param.executors import ParamExecutorFactory
+from core.param.params import ParamResultType
+from core.param.syntax import CommandSyntax
+from core.command.types import Command, HookType
+from core.utils.utils import Utils
 
 
 class BaseCommand(Command, ABC):

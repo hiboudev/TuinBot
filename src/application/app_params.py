@@ -1,4 +1,4 @@
-from command.params.params import CommandParam, ParamType
+from core.param.params import CommandParam, ParamType
 
 
 class ApplicationParams:

@@ -2,13 +2,13 @@ from typing import List
 
 from discord import Message
 
-from command.command_base import BaseCommand
-from command.params.application import ApplicationParams
-from command.params.executors import UserParamExecutor, EmojiParamExecutor, FixedValueParamExecutor
-from command.params.params import CommandParam, ParamType
-from command.params.syntax import CommandSyntax
-from command.types import HookType
-from database.db_reaction import DbAutoReaction
+from application.database.db_reaction import DbAutoReaction
+from core.command.command_base import BaseCommand
+from application.app_params import ApplicationParams
+from core.param.executors import UserParamExecutor, EmojiParamExecutor, FixedValueParamExecutor
+from core.param.params import CommandParam, ParamType
+from core.param.syntax import CommandSyntax
+from core.command.types import HookType
 
 
 class AutoReactionCommand(BaseCommand):

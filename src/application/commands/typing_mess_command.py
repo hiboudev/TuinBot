@@ -2,15 +2,13 @@ from typing import List
 
 from discord import Message, TextChannel, Member
 
-from command.command_base import BaseCommand
-from command.messages import Messages
-from command.params.application import ApplicationParams
-from command.params.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
-from command.params.params import CommandParam, ParamType
-from command.params.syntax import CommandSyntax
-from command.types import HookType
-from database.db_typing_mess import DbTypingMessage, TypingMessage
-from utils.parsing_utils import ParsingUtils
+from application.database.db_typing_mess import DbTypingMessage, TypingMessage
+from core.command.command_base import BaseCommand
+from core.message.messages import Messages
+from application.app_params import ApplicationParams
+from core.param.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
+from core.param.syntax import CommandSyntax
+from core.command.types import HookType
 
 
 class TypingMessageCommand(BaseCommand):

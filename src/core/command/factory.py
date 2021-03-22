@@ -1,7 +1,7 @@
 from typing import Type
 
-from command.command_base import Commands
-from command.types import Command
+from core.command.command_base import Commands
+from core.command.types import Command
 
 
 class CommandFactory:

@@ -2,9 +2,9 @@ from typing import Type
 
 from discord import Embed
 
-from command.params.params import ParamType
-from command.types import Command
-from utils.parsing_utils import ParsingUtils
+from core.param.params import ParamType
+from core.command.types import Command
+from core.utils.parsing_utils import ParsingUtils
 
 
 class Messages:

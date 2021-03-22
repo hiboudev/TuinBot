@@ -1,6 +1,6 @@
 from typing import Union
 
-from database.db_connexion import DatabaseConnection
+from application.database.db_connexion import DatabaseConnection
 
 
 class DbAutoSpoiler:
