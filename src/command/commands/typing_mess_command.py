@@ -10,9 +10,12 @@ from command.params.params import CommandParam, ParamType
 from command.params.syntax import CommandSyntax
 from command.types import HookType
 from database.db_typing_mess import DbTypingMessage, TypingMessage
+from utils.parsing_utils import ParsingUtils
 
 
 class TypingMessageCommand(BaseCommand):
+    # TODO commande très semblable à reply, généraliser ?
+
     _MAX_PER_USER = 3
 
     @staticmethod
@@ -115,11 +118,10 @@ class TypingMessageCommand(BaseCommand):
         for message in messages:
             author = channel.guild.get_member(message.author_id)
 
-            embed = Messages.get_hook_embed(
-                description="{} <@{}>".format(message.message, user.id)
+            embed = Messages.get_recorded_message_embed(
+                message.message,
+                user.id,
+                None if not author else author.display_name
             )
-
-            if author:
-                embed.set_footer(text="Signé {}".format(author.display_name))
 
             await channel.send(embed=embed)

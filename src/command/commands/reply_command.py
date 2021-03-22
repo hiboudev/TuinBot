@@ -9,6 +9,7 @@ from command.params.executors import TextParamExecutor, UserParamExecutor, Fixed
 from command.params.syntax import CommandSyntax
 from command.types import HookType
 from database.db_reply import DbAutoReply, AutoReply
+from utils.parsing_utils import ParsingUtils
 
 
 class ReplyMessageCommand(BaseCommand):
@@ -113,11 +114,10 @@ class ReplyMessageCommand(BaseCommand):
         for text_message in messages:
             author = message.guild.get_member(text_message.author_id)
 
-            embed = Messages.get_hook_embed(
-                description="{} <@{}>".format(text_message.message, message.author.id)
+            embed = Messages.get_recorded_message_embed(
+                text_message.message,
+                message.author.id,
+                None if not author else author.display_name
             )
-
-            if author:
-                embed.set_footer(text="Signé {}".format(author.display_name))
 
             await message.reply(embed=embed)

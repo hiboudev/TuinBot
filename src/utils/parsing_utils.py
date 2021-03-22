@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from typing import List
 
 from discord import User, Client
@@ -8,7 +9,15 @@ from unidecode import unidecode
 from utils.utils import Utils
 
 
+@dataclass
+class LinkExtract:
+    message: str
+    links: List[str]
+
+
 class ParsingUtils:
+    _link_reg_ex = re.compile(r"http[s]?://[^\s]+")
+    _emoji_reg_ex = re.compile(r"^(?P<emoji_string><:(?P<name>[^:]+):(?P<id>\d+)>)")
 
     @staticmethod
     def find_user(users: List[User], name_part: str) -> [User, None]:
@@ -94,15 +103,30 @@ class ParsingUtils:
 
         return emojis[0]["emoji"]
 
-    @staticmethod
-    def get_custom_emoji(text: str, client: Client) -> [str, None]:
-        matches = re.search(r'^(?P<emoji_string><:(?P<name>[^:]+):(?P<id>\d+)>)', text)
+    @classmethod
+    def get_custom_emoji(cls, text: str, client: Client) -> [str, None]:
+        matches = cls._emoji_reg_ex.search(text)
         if matches:
             for emoji in client.emojis:
                 if emoji.id == int(matches.group("id")):
                     return matches.group("emoji_string")
 
         return None
+
+    @classmethod
+    def extract_links(cls, text: str) -> LinkExtract:
+        message = text
+        links = []
+
+        for result in cls._link_reg_ex.findall(text):
+            message = message.replace(result, "")
+            links.append(result)
+
+        return LinkExtract(message, links)
+
+    @classmethod
+    def is_unique_link(cls, text: str) -> bool:
+        return cls._link_reg_ex.fullmatch(text) is not None
 
 
 class UserSearchResult:

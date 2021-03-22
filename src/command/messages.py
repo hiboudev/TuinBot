@@ -4,6 +4,7 @@ from discord import Embed
 
 from command.params.params import ParamType
 from command.types import Command
+from utils.parsing_utils import LinkExtract, ParsingUtils
 
 
 class Messages:
@@ -14,9 +15,31 @@ class Messages:
         return "Il n'y a rien à faire."
 
     @classmethod
-    def get_hook_embed(cls, title: str = None, description: str= None) -> Embed:
+    def get_hook_embed(cls, title: str = None, description: str = None) -> Embed:
         # TODO Prendre en param le "signé"
         return Embed(title=title, description=description, color=cls._HOOK_EMBED_COLOR)
+
+    @classmethod
+    def get_recorded_message_embed(cls, content:str, target_id: int,
+                                   author_name: str = None) -> Embed:
+
+        extracts = ParsingUtils.extract_links(content)
+
+        user_message = "**" + extracts.message + "**" if extracts.message else ""
+
+        description = "{user_message} <@{target_id}>{message_links_sep}{links}".format(
+            user_message=user_message,
+            target_id=target_id,
+            message_links_sep="\n" if extracts.links else "",
+            links="\n".join(extracts.links)
+        )
+
+        embed = cls.get_hook_embed(description=description)
+
+        if author_name:
+            embed.set_footer(text="Signé {}".format(author_name))
+
+        return embed
 
 
 class HelpMessageBuilder:
