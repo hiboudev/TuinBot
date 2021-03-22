@@ -15,7 +15,7 @@ from utils.utils import Utils
 
 class BaseCommand(Command, ABC):
     _delete_delay = 10
-    _delete_delay_help = 60
+    _delete_delay_help = 45
 
     _syntaxes = None
     _sorted_syntaxes = None
