@@ -11,13 +11,18 @@ class CommandParamExecutor:
 
     def __init__(self, param: CommandParam):
         self.param = param
-        self._result_type = ParamResultType.INVALID
-        self._error = None
-        self._is_input_format_valid = False
+        self.__result_type = ParamResultType.INVALID
+        self.__error = None
+        self.__is_input_format_valid = False
 
-    @abstractmethod
     def set_value(self, value: str, message: Message, client: Client):
-        pass
+        if not self._validate_input_format(value):
+            return
+        else:
+            self.__is_input_format_valid = True
+
+        if self._process_param(value, message, client):
+            self.__result_type = ParamResultType.VALID
 
     @staticmethod
     @abstractmethod
@@ -29,14 +34,26 @@ class CommandParamExecutor:
         """
         pass
 
+    @abstractmethod
+    def _validate_input_format(self, value: str) -> bool:
+        pass
+
+    @abstractmethod
+    def _process_param(self, value: str, message: Message, client: Client) -> bool:
+        pass
+
     def is_input_format_valid(self) -> bool:
-        return self._is_input_format_valid
+        return self.__is_input_format_valid
 
     def get_result_type(self) -> ParamResultType:
-        return self._result_type
+        return self.__result_type
 
     def get_error(self) -> str:
-        return self._error
+        return self.__error
+
+    def _set_error(self, error: str) -> bool:
+        self.__error = error
+        return False
 
 
 class UserParamExecutor(CommandParamExecutor):
@@ -45,32 +62,31 @@ class UserParamExecutor(CommandParamExecutor):
         super().__init__(param)
         self._user = None
 
-    def set_value(self, value: str, message: Message, client: Client):
-        if not isinstance(message.channel, TextChannel):
-            return
-
-        # TODO ce serait bien de stocker les min/max sur le param,
-        # mais comment bien gérer la doc selon si c'est un chiffre ou un string ?
-        if len(value) < 3:
-            self._error = "Le nom d'utilisateur doit faire au moins 3 caractères."
-            return
-
-        self._user = ParsingUtils.find_user(message.channel.members, value)
-
-        if self._user:
-            self._result_type = ParamResultType.VALID
-        else:
-            self._error = "Utilisateur introuvable."
-
-    def get_user(self) -> Union[User, None]:
-        return self._user
-
     @staticmethod
     def always_validate_input_format() -> bool:
         return True
 
-    def is_input_format_valid(self) -> bool:
+    def _validate_input_format(self, value: str) -> bool:
         return True
+
+    def _process_param(self, value: str, message: Message, client: Client) -> bool:
+        if not isinstance(message.channel, TextChannel):
+            return False
+
+        # TODO ce serait bien de stocker les min/max sur le param,
+        # mais comment bien gérer la doc selon si c'est un chiffre ou un string ?
+        if len(value) < 3:
+            return self._set_error("Le nom d'utilisateur doit faire au moins 3 caractères.")
+
+        self._user = ParsingUtils.find_user(message.channel.members, value)
+
+        if self._user:
+            return True
+        else:
+            return self._set_error("Utilisateur introuvable.")
+
+    def get_user(self) -> Union[User, None]:
+        return self._user
 
 
 class EmojiParamExecutor(CommandParamExecutor):
@@ -79,37 +95,39 @@ class EmojiParamExecutor(CommandParamExecutor):
         super().__init__(param)
         self._emoji = None
 
-    def set_value(self, value: str, message: Message, client: Client):
+    @staticmethod
+    def always_validate_input_format() -> bool:
+        return True
+
+    def _validate_input_format(self, value: str) -> bool:
+        return True
+
+    def _process_param(self, value: str, message: Message, client: Client) -> bool:
         self._emoji = ParsingUtils.get_emoji(value, client)
 
         if self._emoji:
-            self._result_type = ParamResultType.VALID
+            return True
         else:
-            self._error = "Emoji invalide."
+            return self._set_error("Emoji invalide.")
 
     def get_emoji(self) -> Union[str, None]:
         return self._emoji
 
-    @staticmethod
-    def always_validate_input_format() -> bool:
-        return True
-
-    def is_input_format_valid(self) -> bool:
-        return True
-
 
 class FixedValueParamExecutor(CommandParamExecutor):
-
-    def set_value(self, value: str, message: Message, client: Client):
-        if value == self.param.name:
-            self._is_input_format_valid = True
-            self._result_type = ParamResultType.VALID
-        else:
-            self._error = "Valeur invalide."
 
     @staticmethod
     def always_validate_input_format() -> bool:
         return False
+
+    def _validate_input_format(self, value: str) -> bool:
+        return value == self.param.name
+
+    def _process_param(self, value: str, message: Message, client: Client) -> bool:
+        if value == self.param.name:
+            return True
+        else:
+            return self._set_error("Valeur invalide.")
 
 
 class IntParamExecutor(CommandParamExecutor):
@@ -118,24 +136,25 @@ class IntParamExecutor(CommandParamExecutor):
         super().__init__(param)
         self._int_value = None
 
-    def set_value(self, value: str, message: Message, client: Client):
-        if self.param.config is None or not isinstance(self.param.config, IntParamConfig):
-            raise Exception("Config not found!")
-
-        try:
-            self._int_value = int(value)
-            self._is_input_format_valid = True
-        except ValueError:
-            return
-
-        if self.param.config.min_value <= self._int_value <= self.param.config.max_value:
-            self._result_type = ParamResultType.VALID
-        else:
-            self._error = "Valeur invalide."
-
     @staticmethod
     def always_validate_input_format() -> bool:
         return False
+
+    def _validate_input_format(self, value: str) -> bool:
+        try:
+            self._int_value = int(value)
+            return True
+        except ValueError:
+            return False
+
+    def _process_param(self, value: str, message: Message, client: Client) -> bool:
+        if self.param.config is None or not isinstance(self.param.config, IntParamConfig):
+            raise Exception("Config not found!")
+
+        if self.param.config.min_value <= self._int_value <= self.param.config.max_value:
+            return True
+        else:
+            return self._set_error("Valeur invalide.")
 
     def get_int(self) -> int:
         return self._int_value
@@ -147,15 +166,15 @@ class TextParamExecutor(CommandParamExecutor):
         super().__init__(param)
         self._text = None
 
-    def set_value(self, value: str, message: Message, client: Client):
-        self._text = value
-        self._result_type = ParamResultType.VALID
-
     @staticmethod
     def always_validate_input_format() -> bool:
         return True
 
-    def is_input_format_valid(self) -> bool:
+    def _validate_input_format(self, value: str) -> bool:
+        return True
+
+    def _process_param(self, value: str, message: Message, client: Client) -> bool:
+        self._text = value
         return True
 
     def get_text(self) -> str:

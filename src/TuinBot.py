@@ -10,6 +10,7 @@ from command.commands.typing_mess_command import TypingMessageCommand
 from data.properties import AppProperties
 
 IS_BETA = True
+
 PROPERTIES_PATH = "../data/bot.properties"
 BETA_PROPERTIES_PATH = "../data/bot-beta.properties"
 
@@ -27,5 +28,5 @@ intents.typing = True
 # intents.presences = True
 # AppProperties
 
-bot = TuinBot(intents=intents)
+bot = TuinBot(activity_name=TuinBotCommand.name(), intents=intents)
 bot.run(AppProperties.bot_token())
