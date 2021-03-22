@@ -11,7 +11,9 @@ class DatabaseConnection:
             host=AppProperties.db_host(),
             user=AppProperties.db_user(),
             password=AppProperties.db_password(),
-            database=AppProperties.db_name()
+            database=AppProperties.db_name(),
+            charset="utf8mb4",
+            collation="utf8mb4_unicode_ci"
         )
 
         return self.conn.cursor()

@@ -21,24 +21,28 @@ class DbAutoReaction:
 
     @staticmethod
     def reaction_exists(guild_id: int, target_id: int, emoji: str) -> bool:
+        """ Notes:
+        - using "SELECT EXISTS" crashes on Debian 10 cause of utf-8 decoding,
+        looks like it's the python connector fault.
+        - the emoji comparison requests mysql table to use "COLLATE utf8mb4_bin".
+        """
         sql = """
-                    SELECT EXISTS (
-                        SELECT * FROM
+                    SELECT COUNT(*)
+                        FROM
                             auto_reaction
                         WHERE
-                            guild_id=%(guild_id)s
+                            guild_id = %(guild_id)s
                         AND
                             target_id = %(target_id)s
                         AND
                             emoji = %(emoji)s
-                    )
                     """
 
         with DatabaseConnection() as cursor:
             cursor.execute(sql,
                            {"guild_id": guild_id, "target_id": target_id, "emoji": emoji})
 
-            return cursor.fetchone()[0] == 1
+            return cursor.fetchone()[0] >= 1
 
     @staticmethod
     def remove_auto_reaction(guild_id: int, author_id: int, target_id: int) -> bool:

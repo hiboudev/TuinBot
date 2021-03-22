@@ -9,7 +9,7 @@ from command.commands.tuin_command import TuinBotCommand
 from command.commands.typing_mess_command import TypingMessageCommand
 from data.properties import AppProperties
 
-IS_BETA = True
+IS_BETA = False
 
 PROPERTIES_PATH = "../data/bot.properties"
 BETA_PROPERTIES_PATH = "../data/bot-beta.properties"
