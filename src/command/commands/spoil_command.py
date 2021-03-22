@@ -1,6 +1,6 @@
 from typing import List
 
-from discord import Message, TextChannel, User, Embed, Member
+from discord import Message, TextChannel, User, Member
 
 from command.command_base import BaseCommand
 from command.messages import Messages
@@ -45,14 +45,15 @@ class AutoSpoilerCommand(BaseCommand):
 
     @classmethod
     def _add_spoiler(cls, message: Message, user_executor: UserParamExecutor):
-        if cls._execute_db_bool_request(lambda:
-                                        DbAutoSpoiler.add_auto_spoiler(message.guild.id,
-                                                                       message.author.id,
-                                                                       user_executor.get_user().id
-                                                                       ),
-                                        message):
+        if DbAutoSpoiler.add_auto_spoiler(message.guild.id,
+                                          message.author.id,
+                                          user_executor.get_user().id
+                                          ):
             cls._reply(message,
                        "Spoiler ajouté au prochain message de **{}** !".format(user_executor.get_user().display_name))
+        else:
+            cls._reply(message,
+                       "Un spoiler est déjà mis sur **{}**.".format(user_executor.get_user().display_name))
 
     # noinspection PyUnusedLocal
     @classmethod
