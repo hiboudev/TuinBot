@@ -15,6 +15,7 @@ class Messages:
 
     @classmethod
     def get_hook_embed(cls, title: str = None, description: str= None) -> Embed:
+        # TODO Prendre en param le "signé"
         return Embed(title=title, description=description, color=cls._HOOK_EMBED_COLOR)
 
 

@@ -79,8 +79,7 @@ class BaseCommand(Command, ABC):
                 return
 
         # No valid syntax nor giving error, can we reach this?
-        cls._display_error(message, """Ha ! On dirait que le développeur n'avait pas prévu ça !
-Merci de lui expliquer l'horreur que tu viens de faire pour qu'il corrige. :wink:""")
+        cls._display_error(message, """Tu as dû faire une petite erreur quelque part.""")
 
     @classmethod
     def get_syntaxes(cls) -> List[CommandSyntax]:

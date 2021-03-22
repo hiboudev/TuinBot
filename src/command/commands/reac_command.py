@@ -108,5 +108,6 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     async def _execute_hook_async(cls, message: Message, reactions: List[str]):
+        # Note: when message is spoiled, addind reaction triggers an error cause message is deleted
         for reaction in reactions:
             await message.add_reaction(reaction)
