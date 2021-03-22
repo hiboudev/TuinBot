@@ -5,19 +5,19 @@ from database.db_connexion import DatabaseConnection
 
 
 @dataclass
-class TypingMessage:
+class AutoReply:
     message: str
     author_id: int
 
 
-class DbTypingMessage:
+class DbAutoReply:
 
     @staticmethod
-    def add_typing_message(guild_id: int, author_id: int, target_id: int, message: str) -> bool:
+    def add_auto_reply(guild_id: int, author_id: int, target_id: int, message: str) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                             INSERT IGNORE INTO
-                                typing_message (guild_id, author_id, target_id, message)
+                                auto_reply (guild_id, author_id, target_id, message)
                             VALUES
                                 (%(guild_id)s, %(author_id)s, %(target_id)s, %(message)s)
                             ON DUPLICATE KEY UPDATE
@@ -28,36 +28,36 @@ class DbTypingMessage:
             return cursor.rowcount > 0
 
     @staticmethod
-    def count_typing_messages(guild_id: int, target_id: int, exclude_user_id: int = None) -> int:
-        sql = """
-                    SELECT
-                        COUNT(*)
-                    FROM
-                        typing_message
-                    WHERE
-                        guild_id=%(guild_id)s
-                    AND
-                        target_id = %(target_id)s
-                    """
-
-        if exclude_user_id is not None:
-            sql += """
-                    AND
-                        author_id != %(exclude_user_id)s
-                    """
-
+    def count_auto_replys(guild_id: int, target_id: int, exclude_user_id: int = None) -> int:
         with DatabaseConnection() as cursor:
+            sql = """
+                        SELECT
+                            COUNT(*)
+                        FROM
+                            auto_reply
+                        WHERE
+                            guild_id=%(guild_id)s
+                        AND
+                            target_id = %(target_id)s
+                        """
+
+            if exclude_user_id is not None:
+                sql += """
+                        AND
+                            author_id != %(exclude_user_id)s
+                        """
+
             cursor.execute(sql,
                            {"guild_id": guild_id, "target_id": target_id, "exclude_user_id": exclude_user_id})
 
             return cursor.fetchone()[0]
 
     @staticmethod
-    def remove_typing_message(guild_id: int, author_id: int, target_id: int) -> bool:
+    def remove_auto_reply(guild_id: int, author_id: int, target_id: int) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                                 DELETE FROM
-                                    typing_message
+                                    auto_reply
                                 WHERE
                                     guild_id = %(guild_id)s
                                 AND
@@ -70,14 +70,14 @@ class DbTypingMessage:
             return cursor.rowcount > 0
 
     @staticmethod
-    def get_typing_message_content(guild_id: int, author_id: int, target_id: int) -> Union[str, None]:
+    def get_auto_reply_content(guild_id: int, author_id: int, target_id: int) -> Union[str, None]:
         """Doesn't delete the spoiler from database."""
         with DatabaseConnection() as cursor:
             cursor.execute("""
                                 SELECT
                                     message
                                 FROM
-                                    typing_message
+                                    auto_reply
                                 WHERE
                                     guild_id=%(guild_id)s
                                 AND
@@ -91,7 +91,7 @@ class DbTypingMessage:
             return None if not result else result[0]
 
     @classmethod
-    def use_typing_messages(cls, guild_id: int, target_id: int) -> List[TypingMessage]:
+    def use_auto_replys(cls, guild_id: int, target_id: int) -> List[AutoReply]:
         """Delete the spoiler from database."""
 
         with DatabaseConnection() as cursor:
@@ -99,7 +99,7 @@ class DbTypingMessage:
                                 SELECT
                                     message, author_id
                                 FROM
-                                    typing_message
+                                    auto_reply
                                 WHERE
                                     guild_id=%(guild_id)s
                                 AND
@@ -107,11 +107,11 @@ class DbTypingMessage:
                                 """,
                            {"guild_id": guild_id, "target_id": target_id})
 
-            messages = [TypingMessage(i[0], i[1]) for i in cursor.fetchall()]
+            messages = [AutoReply(i[0], i[1]) for i in cursor.fetchall()]
 
             cursor.execute("""
                                 DELETE FROM
-                                    typing_message
+                                    auto_reply
                                 WHERE
                                     guild_id=%(guild_id)s
                                 AND
