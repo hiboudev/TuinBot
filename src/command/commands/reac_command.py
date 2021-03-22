@@ -12,6 +12,7 @@ from database.db_reaction import DbAutoReaction
 
 
 class AutoReactionCommand(BaseCommand):
+    _MAX_REACTION_PER_TARGET = 6
 
     @staticmethod
     def name() -> str:
@@ -51,7 +52,19 @@ class AutoReactionCommand(BaseCommand):
     @classmethod
     def _add_reaction(cls, message: Message, user_executor: UserParamExecutor,
                       emoji_executor: EmojiParamExecutor):
-        # Can add only one type of emoji, cause bot can't add the same several times.
+
+        # Check max emoji limit
+        reaction_count = DbAutoReaction.count_target_reactions(message.guild.id,
+                                                               user_executor.get_user().id,
+                                                               message.author.id)
+        if reaction_count >= cls._MAX_REACTION_PER_TARGET:
+            cls._reply(message,
+                       "Le tuin **{}** a déjà {} réactions sur lui, laissons-le respirer un peu.".format(
+                           user_executor.get_user().display_name, reaction_count)
+                       )
+            return
+
+        # Can add only one type of emoji per target, cause bot can't add the same several times.
         if DbAutoReaction.reaction_exists(message.guild.id,
                                           user_executor.get_user().id,
                                           emoji_executor.get_emoji()):

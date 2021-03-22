@@ -45,6 +45,30 @@ class DbAutoReaction:
 
             return cursor.fetchone() is not None
 
+    @classmethod
+    def count_target_reactions(cls, guild_id: int, target_id: int, exclude_user_id: int = None) -> int:
+        sql = """
+                    SELECT COUNT(*)
+                        FROM
+                            auto_reaction
+                        WHERE
+                            guild_id = %(guild_id)s
+                        AND
+                            target_id = %(target_id)s
+                    """
+
+        if exclude_user_id is not None:
+            sql += """
+                    AND
+                        author_id != %(exclude_user_id)s
+                    """
+
+        with DatabaseConnection() as cursor:
+            cursor.execute(sql,
+                           {"guild_id": guild_id, "target_id": target_id, "exclude_user_id": exclude_user_id})
+
+            return cursor.fetchone()[0]
+
     @staticmethod
     def remove_auto_reaction(guild_id: int, author_id: int, target_id: int) -> bool:
         with DatabaseConnection() as cursor:
