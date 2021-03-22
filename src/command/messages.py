@@ -4,7 +4,7 @@ from discord import Embed
 
 from command.params.params import ParamType
 from command.types import Command
-from utils.parsing_utils import LinkExtract, ParsingUtils
+from utils.parsing_utils import ParsingUtils
 
 
 class Messages:
@@ -16,13 +16,11 @@ class Messages:
 
     @classmethod
     def get_hook_embed(cls, title: str = None, description: str = None) -> Embed:
-        # TODO Prendre en param le "signé"
         return Embed(title=title, description=description, color=cls._HOOK_EMBED_COLOR)
 
     @classmethod
-    def get_recorded_message_embed(cls, content:str, target_id: int,
+    def get_recorded_message_embed(cls, content: str, target_id: int,
                                    author_name: str = None) -> Embed:
-
         extracts = ParsingUtils.extract_links(content)
 
         user_message = "**" + extracts.message + "**" if extracts.message else ""

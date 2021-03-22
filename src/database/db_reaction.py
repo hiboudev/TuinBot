@@ -20,6 +20,27 @@ class DbAutoReaction:
             return cursor.rowcount > 0
 
     @staticmethod
+    def reaction_exists(guild_id: int, target_id: int, emoji: str) -> bool:
+        sql = """
+                    SELECT EXISTS (
+                        SELECT * FROM
+                            auto_reaction
+                        WHERE
+                            guild_id=%(guild_id)s
+                        AND
+                            target_id = %(target_id)s
+                        AND
+                            emoji = %(emoji)s
+                    )
+                    """
+
+        with DatabaseConnection() as cursor:
+            cursor.execute(sql,
+                           {"guild_id": guild_id, "target_id": target_id, "emoji": emoji})
+
+            return cursor.fetchone()[0] == 1
+
+    @staticmethod
     def remove_auto_reaction(guild_id: int, author_id: int, target_id: int) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""

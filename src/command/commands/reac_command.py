@@ -51,6 +51,15 @@ class AutoReactionCommand(BaseCommand):
     @classmethod
     def _add_reaction(cls, message: Message, user_executor: UserParamExecutor,
                       emoji_executor: EmojiParamExecutor):
+        # Can add only one type of emoji, cause bot can't add the same several times.
+        if DbAutoReaction.reaction_exists(message.guild.id,
+                                          user_executor.get_user().id,
+                                          emoji_executor.get_emoji()):
+            cls._reply(message,
+                       "Cet emoji est déjà mis sur **%s**, il faudrait en choisir un autre." % (
+                           user_executor.get_user().display_name))
+            return
+
         if cls._execute_db_bool_request(lambda:
                                         DbAutoReaction.add_auto_reaction(message.guild.id,
                                                                          message.author.id,
