@@ -28,6 +28,23 @@ class DbTypingMessage:
             return cursor.rowcount > 0
 
     @staticmethod
+    def count_typing_messages(guild_id: int, target_id: int) -> int:
+        with DatabaseConnection() as cursor:
+            cursor.execute("""
+                                SELECT
+                                    COUNT(*)
+                                FROM
+                                    typing_message
+                                WHERE
+                                    guild_id=%(guild_id)s
+                                AND
+                                    target_id = %(target_id)s
+                                """,
+                           {"guild_id": guild_id, "target_id": target_id})
+
+            return cursor.fetchone()[0]
+
+    @staticmethod
     def remove_typing_message(guild_id: int, author_id: int, target_id: int) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""

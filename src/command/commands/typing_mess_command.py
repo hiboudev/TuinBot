@@ -1,6 +1,6 @@
 from typing import List
 
-from discord import Message, TextChannel, Member, Embed
+from discord import Message, TextChannel, Member
 
 from command.command_base import BaseCommand
 from command.messages import Messages
@@ -13,6 +13,7 @@ from database.db_typing_mess import DbTypingMessage, TypingMessage
 
 
 class TypingMessageCommand(BaseCommand):
+    _MAX_PER_USER = 3
 
     @staticmethod
     def name() -> str:
@@ -46,13 +47,22 @@ class TypingMessageCommand(BaseCommand):
     # noinspection PyUnusedLocal
     @classmethod
     def _add_typing_message(cls, message: Message, user_executor: UserParamExecutor, text_executor: TextParamExecutor):
-        if cls._execute_db_bool_request(lambda:
-                                        DbTypingMessage.add_typing_message(message.guild.id,
-                                                                           message.author.id,
-                                                                           user_executor.get_user().id,
-                                                                           text_executor.get_text()
-                                                                           ),
-                                        message):
+        typing_count = DbTypingMessage.count_typing_messages(message.guild.id, user_executor.get_user().id)
+
+        if typing_count >= cls._MAX_PER_USER:
+            cls._reply(
+                message,
+                "Oups, il y a déjà {} messages enregistrés pour **{}**, il va falloir attendre ton tour !".format(
+                    typing_count, user_executor.get_user().display_name)
+            )
+
+        elif cls._execute_db_bool_request(lambda:
+                                          DbTypingMessage.add_typing_message(message.guild.id,
+                                                                             message.author.id,
+                                                                             user_executor.get_user().id,
+                                                                             text_executor.get_text()
+                                                                             ),
+                                          message):
             cls._reply(message,
                        "Message enregistré pour **%s** !" % user_executor.get_user().display_name)
 
