@@ -1,6 +1,6 @@
 from typing import List
 
-from discord import Message, TextChannel, Member
+from discord import Message
 
 from command.command_base import BaseCommand
 from command.messages import Messages
@@ -90,8 +90,8 @@ class ReplyMessageCommand(BaseCommand):
             cls._reply(message, "Aucun message enregistré pour **{}** !".format(user_executor.get_user().display_name))
         else:
             cls._reply(message,
-                       "Message enregistré pour **{}** : *{}*".format(user_executor.get_user().display_name,
-                                                                      sentence.replace("*", "\\*"))
+                       "Message enregistré pour **{}** : {}".format(user_executor.get_user().display_name,
+                                                                    sentence)
                        )
 
     @staticmethod
@@ -103,7 +103,7 @@ class ReplyMessageCommand(BaseCommand):
         return HookType.MESSAGE
 
     @classmethod
-    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
+    def execute_message_hook(cls, message: Message):
         messages = DbAutoReply.use_auto_replys(message.guild.id, message.author.id)
 
         if messages:

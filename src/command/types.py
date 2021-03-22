@@ -49,5 +49,9 @@ class Command(ABC):
         return HookType.NONE
 
     @classmethod
-    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
+    def execute_message_hook(cls, message: Message):
+        pass
+
+    @classmethod
+    def execute_typing_hook(cls, channel: TextChannel, user: Member):
         pass

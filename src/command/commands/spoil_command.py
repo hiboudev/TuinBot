@@ -94,7 +94,7 @@ class AutoSpoilerCommand(BaseCommand):
         return HookType.MESSAGE
 
     @classmethod
-    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
+    def execute_message_hook(cls, message: Message):
         if not cls._can_execute_hook(message):
             return
 

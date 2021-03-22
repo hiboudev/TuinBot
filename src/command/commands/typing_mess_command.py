@@ -91,8 +91,8 @@ class TypingMessageCommand(BaseCommand):
             cls._reply(message, "Aucun message enregistré pour **{}** !".format(user_executor.get_user().display_name))
         else:
             cls._reply(message,
-                       "Message enregistré pour **{}** : *{}*".format(user_executor.get_user().display_name,
-                                                                      sentence.replace("*", "\\*"))
+                       "Message enregistré pour **{}** : {}".format(user_executor.get_user().display_name,
+                                                                    sentence)
                        )
 
     @staticmethod
@@ -104,11 +104,11 @@ class TypingMessageCommand(BaseCommand):
         return HookType.TYPING
 
     @classmethod
-    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
-        messages = DbTypingMessage.use_typing_messages(typing_user.guild.id, typing_user.id)
+    def execute_typing_hook(cls, channel: TextChannel, user: Member):
+        messages = DbTypingMessage.use_typing_messages(user.guild.id, user.id)
 
         if messages:
-            cls._async(cls._execute_hook_async(typing_channel, typing_user, messages))
+            cls._async(cls._execute_hook_async(channel, user, messages))
 
     @classmethod
     async def _execute_hook_async(cls, channel: TextChannel, user: Member, messages: List[TypingMessage]):

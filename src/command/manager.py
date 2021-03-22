@@ -27,8 +27,9 @@ class CommandManager:
         if not cls._parse_command(message, client):
             # we don't apply hooks on a command message
             for hook in Commands.get_hooks(HookType.MESSAGE):
-                hook.execute_hook(message)
+                hook.execute_message_hook(message)
 
+    # noinspection PyUnusedLocal
     @classmethod
     def manage_typing(cls, channel: Messageable, user: Union[User, Member], when: datetime):
         if user.bot:
@@ -42,7 +43,7 @@ class CommandManager:
             return
 
         for hook in Commands.get_hooks(HookType.TYPING):
-            hook.execute_hook(typing_channel=channel, typing_user=user)
+            hook.execute_typing_hook(channel, user)
 
     @staticmethod
     def _parse_command(message: Message, client: Client) -> bool:
