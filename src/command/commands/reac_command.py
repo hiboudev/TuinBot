@@ -48,22 +48,6 @@ class AutoReactionCommand(BaseCommand):
 
         return syntaxes
 
-    @staticmethod
-    def has_hook() -> bool:
-        return True
-
-    @staticmethod
-    def hook_type() -> HookType:
-        return HookType.MESSAGE
-
-    @classmethod
-    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
-        reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
-                                                      message.author.id)
-
-        for reaction in reactions:
-            cls._async(message.add_reaction(reaction))
-
     @classmethod
     def _add_reaction(cls, message: Message, user_executor: UserParamExecutor,
                       emoji_executor: EmojiParamExecutor):
@@ -105,3 +89,19 @@ class AutoReactionCommand(BaseCommand):
         cls._reply(message,
                    "**%s** a %s réaction(s) automatique(s) : %s" % (
                        user_executor.get_user().display_name, len(reactions), " ".join(reactions)))
+
+    @staticmethod
+    def has_hook() -> bool:
+        return True
+
+    @staticmethod
+    def hook_type() -> HookType:
+        return HookType.MESSAGE
+
+    @classmethod
+    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
+        reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
+                                                      message.author.id)
+
+        for reaction in reactions:
+            cls._async(message.add_reaction(reaction))

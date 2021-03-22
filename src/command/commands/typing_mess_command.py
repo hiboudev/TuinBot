@@ -3,6 +3,7 @@ from typing import List
 from discord import Message, TextChannel, Member, Embed
 
 from command.command_base import BaseCommand
+from command.messages import Messages
 from command.params.application import ApplicationParams
 from command.params.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
 from command.params.params import CommandParam, ParamType
@@ -23,7 +24,6 @@ class TypingMessageCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
-        # TODO tester si tous les types de guillemets marchent
         syntaxes = [
             CommandSyntax("Enregistre un message",
                           cls._add_typing_message,
@@ -104,7 +104,7 @@ class TypingMessageCommand(BaseCommand):
         for message in messages:
             author = channel.guild.get_member(message.author_id)
 
-            embed = Embed(
+            embed = Messages.get_hook_embed(
                 description="{} <@{}>".format(message.message, user.id)
             )
 

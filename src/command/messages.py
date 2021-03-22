@@ -7,9 +7,15 @@ from command.types import Command
 
 
 class Messages:
+    _HOOK_EMBED_COLOR = 0x17907e
+
     @staticmethod
     def nothing_to_do() -> str:
         return "Il n'y a rien à faire."
+
+    @classmethod
+    def get_hook_embed(cls, title: str = None, description: str= None) -> Embed:
+        return Embed(title=title, description=description, color=cls._HOOK_EMBED_COLOR)
 
 
 class HelpMessageBuilder:
