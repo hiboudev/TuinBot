@@ -23,6 +23,10 @@ class AutoReactionCommand(BaseCommand):
         return "Ajoute une réaction automatique aux messages d'un tuin."
 
     @classmethod
+    def description_details(cls) -> [str, None]:
+        return """Tu ne peux mettre qu'une réaction par tuin, et un tuin peut avoir au maximum {} réactions sur lui.""".format(cls._MAX_REACTION_PER_TARGET)
+
+    @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
         emoji_param = CommandParam("emoji", "Un emoji qui lui collera au cul pour un moment.", ParamType.EMOJI)
 

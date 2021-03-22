@@ -26,6 +26,10 @@ class Command(ABC):
         pass
 
     @classmethod
+    def description_details(cls) -> [str, None]:
+        return None
+
+    @classmethod
     @abstractmethod
     def get_syntaxes(cls) -> List[CommandSyntax]:
         pass

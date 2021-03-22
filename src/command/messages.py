@@ -67,7 +67,8 @@ class HelpMessageBuilder:
 
             # add space at field bottom for better lisibility (except for last line),
             #  it's thiner than an empty field.
-            add_bottom_margin = field_count < len(command.get_syntaxes()) - 2
+            # add_bottom_margin = field_count < len(command.get_syntaxes()) - 2
+            add_bottom_margin = True
 
             embed.add_field(name=syntax.title, inline=True,
                             value="""```ini\n!{name} {params}```{desc}{margin}""".format(
@@ -81,5 +82,11 @@ class HelpMessageBuilder:
 
             if field_count % 2 == 1:
                 embed.add_field(name="\u200B", value="\u200B", inline=True)
+
+        # embed.add_field(name="\u200B", value="\u200B", inline=False)
+
+        details = command.description_details()
+        if details:
+            embed.set_footer(text=details)
 
         return embed

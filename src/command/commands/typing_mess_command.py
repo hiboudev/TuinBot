@@ -27,6 +27,10 @@ class TypingMessageCommand(BaseCommand):
         return "Affiche un message à un tuin la prochaine fois qu'il tapera sur son clavier."
 
     @classmethod
+    def description_details(cls) -> [str, None]:
+        return """Un tuin peut avoir au maximum {} messages planifiés sur lui.""".format(cls._MAX_PER_USER)
+
+    @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
         syntaxes = [
             CommandSyntax("Enregistre un message",

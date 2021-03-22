@@ -23,6 +23,10 @@ class AutoSpoilerCommand(BaseCommand):
         return "Ajoute un spoiler sur le prochain message d'un tuin."
 
     @classmethod
+    def description_details(cls) -> [str, None]:
+        return """Un tuin peut avoir au maximum 1 spoiler planifié sur lui."""
+
+    @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
 
         syntaxes = [
