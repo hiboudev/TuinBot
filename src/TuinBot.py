@@ -5,6 +5,7 @@ from command.command_base import Commands
 from command.commands.reac_command import AutoReactionCommand
 from command.commands.spoil_command import AutoSpoilerCommand
 from command.commands.tuin_command import TuinBotCommand
+from command.commands.typing_mess_command import TypingMessageCommand
 from data.properties import AppProperties
 
 IS_BETA = True
@@ -15,7 +16,8 @@ AppProperties.load(BETA_PROPERTIES_PATH if IS_BETA else PROPERTIES_PATH)
 
 Commands.set_command_list(TuinBotCommand,
                           AutoReactionCommand,
-                          AutoSpoilerCommand)
+                          AutoSpoilerCommand,
+                          TypingMessageCommand)
 
 intents = Intents.default()
 intents.members = True

@@ -35,21 +35,6 @@ class DbAutoSpoiler:
 
             return cursor.rowcount > 0
 
-    # @staticmethod
-    # def remove_my_spoiler(guild_id: int, target_id: int) -> bool:
-    #     with DatabaseConnection() as cursor:
-    #         cursor.execute("""
-    #                             DELETE FROM
-    #                                 auto_spoiler
-    #                             WHERE
-    #                                 guild_id = %(guild_id)s
-    #                             AND
-    #                                 target_id = %(target_id)s
-    #                            """,
-    #                        {"guild_id": guild_id, "target_id": target_id})
-    #
-    #         return cursor.rowcount > 0
-
     @staticmethod
     def get_auto_spoiler_author(guild_id: int, target_id: int) -> Union[int, None]:
         """Doesn't delete the spoiler from database."""

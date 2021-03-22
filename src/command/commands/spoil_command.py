@@ -1,6 +1,6 @@
 from typing import List
 
-from discord import Message, TextChannel, User, Embed
+from discord import Message, TextChannel, User, Embed, Member
 
 from command.command_base import BaseCommand
 from command.params.application import ApplicationParams
@@ -23,7 +23,6 @@ class AutoSpoilerCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
-        info_param = CommandParam("info", "", ParamType.FIXED_VALUE)
 
         syntaxes = [
             CommandSyntax("Ajoute un spoiler sur un tuin",
@@ -38,7 +37,7 @@ class AutoSpoilerCommand(BaseCommand):
             CommandSyntax("Regarde quel tuin a mis un spoiler sur un tuin",
                           cls._display_spoiler_info,
                           ApplicationParams.USER,
-                          info_param
+                          ApplicationParams.INFO
                           )
         ]
 
@@ -53,7 +52,7 @@ class AutoSpoilerCommand(BaseCommand):
         return HookType.MESSAGE
 
     @classmethod
-    def execute_hook(cls, message: Message):
+    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
         if not cls._can_execute_hook(message):
             return
 
@@ -86,7 +85,7 @@ class AutoSpoilerCommand(BaseCommand):
 
         embed = Embed(
             title=":popcorn:\u00A0\u00A0\u00A0\u00A0Avis à la population !\u00A0\u00A0\u00A0\u00A0:popcorn:",
-            description="Le tuin **{}** va faire une déclaration ! :partying_face:\n\n{}".format(
+            description="Le tuin **{}** a une déclaration à faire ! :partying_face:\n\n{}".format(
                 message.author.display_name,
                 ":point_right: \u00A0\u00A0\u00A0\u00A0||\u00A0\u00A0*"
                 + content + "*\u00A0\u00A0||" if content else ""

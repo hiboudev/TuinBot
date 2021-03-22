@@ -141,12 +141,34 @@ class IntParamExecutor(CommandParamExecutor):
         return self._int_value
 
 
+class TextParamExecutor(CommandParamExecutor):
+
+    def __init__(self, param: CommandParam):
+        super().__init__(param)
+        self._text = None
+
+    def set_value(self, value: str, message: Message, client: Client):
+        self._text = value
+        self._result_type = ParamResultType.VALID
+
+    @staticmethod
+    def always_validate_input_format() -> bool:
+        return True
+
+    def is_input_format_valid(self) -> bool:
+        return True
+
+    def get_text(self) -> str:
+        return self._text
+
+
 class ParamExecutorFactory:
     _executors_by_type: Dict[ParamType, Type[CommandParamExecutor]] = {
         ParamType.USER: UserParamExecutor,
         ParamType.EMOJI: EmojiParamExecutor,
         ParamType.FIXED_VALUE: FixedValueParamExecutor,
-        ParamType.INT: IntParamExecutor
+        ParamType.INT: IntParamExecutor,
+        ParamType.TEXT: TextParamExecutor
     }
 
     @classmethod

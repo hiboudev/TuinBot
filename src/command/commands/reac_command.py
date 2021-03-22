@@ -1,6 +1,6 @@
 from typing import List
 
-from discord import Message
+from discord import Message, TextChannel, Member
 
 from command.command_base import BaseCommand
 from command.params.application import ApplicationParams
@@ -57,7 +57,7 @@ class AutoReactionCommand(BaseCommand):
         return HookType.MESSAGE
 
     @classmethod
-    def execute_hook(cls, message: Message):
+    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
         reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
                                                       message.author.id)
 

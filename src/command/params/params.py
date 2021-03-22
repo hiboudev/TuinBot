@@ -7,6 +7,7 @@ class ParamType(Enum):
     EMOJI = 2
     FIXED_VALUE = 3
     INT = 4
+    TEXT = 5
 
 
 class ParamResultType(Enum):

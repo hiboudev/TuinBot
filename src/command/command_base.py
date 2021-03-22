@@ -172,7 +172,10 @@ class Commands:
                         cls._hooks[command.hook_type()] = []
                     cls._hooks[command.hook_type()].append(command)
 
-        return cls._hooks[hook_type]
+        if hook_type in cls._hooks:
+            return cls._hooks[hook_type]
+
+        return []
 
     @classmethod
     def _validate_commands_syntax(cls, commands: Iterable[Type[Command]]):

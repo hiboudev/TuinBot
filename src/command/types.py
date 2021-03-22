@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List, Union
 
-from discord import Message, Client, Embed
+from discord import Message, Client, Embed, TextChannel, Member
 
 from command.params.syntax import CommandSyntax
 
@@ -49,5 +49,5 @@ class Command(ABC):
         return HookType.NONE
 
     @classmethod
-    def execute_hook(cls, message: Message):
+    def execute_hook(cls, message: Message = None, typing_channel: TextChannel = None, typing_user: Member = None):
         pass
