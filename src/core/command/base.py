@@ -102,7 +102,7 @@ class BaseCommand(Command, ABC):
     def _get_sorted_syntaxes(cls) -> List[CommandSyntax]:
         if cls._sorted_syntaxes is None:
             cls._sorted_syntaxes = cls.get_syntaxes().copy()
-            Utils.multisort(cls._sorted_syntaxes, (("_always_validate_input_format", False), ("param_count", True)))
+            Utils.multisort(cls._sorted_syntaxes, (("always_validate_input_format", False), ("param_count", True)))
 
         return cls._sorted_syntaxes
 
