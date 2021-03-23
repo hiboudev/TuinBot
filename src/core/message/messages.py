@@ -21,6 +21,7 @@ class Messages:
     @classmethod
     def get_recorded_message_embed(cls, content: str, target_id: int,
                                    author_name: str = None) -> Embed:
+        # TODO cette méthode devrait être dans le package "application"
         extracts = ParsingUtils.extract_links(content)
 
         user_message = "**" + extracts.message + "**" if extracts.message else ""
@@ -38,6 +39,11 @@ class Messages:
             embed.set_footer(text="Signé {}".format(author_name))
 
         return embed
+
+    @staticmethod
+    def get_memo_embed(title: str, content: str) -> Embed:
+        # TODO cette méthode devrait être dans le package "application"
+        return Embed(title=title, description=content, color=0x594566)
 
 
 class HelpMessageBuilder:

@@ -1,5 +1,6 @@
 from discord import Intents
 
+from application.command.memo_command import MemoCommand
 from application.command.reac_command import AutoReactionCommand
 from application.command.reply_command import ReplyMessageCommand
 from application.command.spoil_command import AutoSpoilerCommand
@@ -20,7 +21,8 @@ CommandRepository.set_command_list(TuinBotCommand,
                                    AutoReactionCommand,
                                    AutoSpoilerCommand,
                                    TypingMessageCommand,
-                                   ReplyMessageCommand)
+                                   ReplyMessageCommand,
+                                   MemoCommand)
 
 intents = Intents.default()
 intents.members = True
