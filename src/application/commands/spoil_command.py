@@ -4,7 +4,7 @@ from discord import Message, User
 
 from application.param.app_params import ApplicationParams
 from application.database.db_spoiler import DbAutoSpoiler
-from core.command.command_base import BaseCommand
+from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.message.messages import Messages
 from core.param.syntax import CommandSyntax

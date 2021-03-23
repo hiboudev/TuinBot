@@ -4,7 +4,7 @@ from discord import Message
 
 from application.database.db_reply import DbAutoReply, AutoReply
 from application.param.app_params import ApplicationParams
-from core.command.command_base import BaseCommand
+from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
 from core.message.messages import Messages

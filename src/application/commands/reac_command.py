@@ -4,7 +4,7 @@ from discord import Message
 
 from application.param.app_params import ApplicationParams
 from application.database.db_reaction import DbAutoReaction
-from core.command.command_base import BaseCommand
+from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.param.params import CommandParam, ParamType
 from core.param.syntax import CommandSyntax
