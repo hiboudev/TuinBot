@@ -1,21 +1,21 @@
 import asyncio
 import sys
 from abc import ABC, abstractmethod
-from typing import List, Dict, Callable, Type, Union, Iterable, Coroutine
+from typing import List, Dict, Callable, Union, Coroutine
 
 from discord import Message, Client, Embed
 
+from core.command.types import Command
+from core.executor.base import ParamResultType
+from core.executor.factory import ParamExecutorFactory
 from core.message.messages import HelpMessageBuilder, Messages
-from core.param.executors import ParamExecutorFactory
-from core.param.params import ParamResultType
 from core.param.syntax import CommandSyntax
-from core.command.types import Command, HookType
 from core.utils.utils import Utils
 
 
 class BaseCommand(Command, ABC):
     _delete_delay = 10
-    _delete_delay_help = 45
+    _delete_delay_help = 40
 
     _syntaxes = None
     _sorted_syntaxes = None
@@ -148,35 +148,3 @@ class BaseCommand(Command, ABC):
     @classmethod
     def get_help(cls) -> Union[Embed, str]:
         return HelpMessageBuilder.build(cls)
-
-
-class Commands:
-    _hooks: Dict[HookType, List[Type[Command]]] = None
-
-    # List is not filled here cause of cyclic import issue.
-    LIST: Iterable[Type[Command]] = []
-
-    @classmethod
-    def set_command_list(cls, *command_list: Type[Command]):
-        cls._validate_commands_syntax(command_list)
-        cls.LIST = command_list
-
-    @classmethod
-    def get_hooks(cls, hook_type: HookType) -> List[Type[Command]]:
-        if cls._hooks is None:
-            cls._hooks = {}
-            for command in cls.LIST:
-                if command.has_hook():
-                    if command.hook_type() not in cls._hooks:
-                        cls._hooks[command.hook_type()] = []
-                    cls._hooks[command.hook_type()].append(command)
-
-        if hook_type in cls._hooks:
-            return cls._hooks[hook_type]
-
-        return []
-
-    @classmethod
-    def _validate_commands_syntax(cls, commands: Iterable[Type[Command]]):
-        for command in commands:
-            CommandSyntax.validate_syntaxes(command.get_syntaxes())

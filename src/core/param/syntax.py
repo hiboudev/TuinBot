@@ -4,7 +4,7 @@ from typing import Callable, List
 
 from discord import Message
 
-from core.param.executors import ParamExecutorFactory, CommandParamExecutor
+from core.executor.factory import ParamExecutorFactory
 from core.param.params import CommandParam
 
 

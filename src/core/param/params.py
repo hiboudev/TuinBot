@@ -10,11 +10,6 @@ class ParamType(Enum):
     TEXT = 5
 
 
-class ParamResultType(Enum):
-    VALID = 1
-    INVALID = 2
-
-
 class ParamConfig:
     pass
 

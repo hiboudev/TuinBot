@@ -2,14 +2,14 @@ from typing import List
 
 from discord import Message, User
 
+from application.param.app_params import ApplicationParams
 from application.database.db_spoiler import DbAutoSpoiler
 from core.command.command_base import BaseCommand
-from core.message.messages import Messages
-from application.app_params import ApplicationParams
-from core.param.executors import UserParamExecutor, FixedValueParamExecutor
-from core.param.syntax import CommandSyntax
 from core.command.types import HookType
+from core.message.messages import Messages
+from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
+from core.executor.executors import UserParamExecutor, FixedValueParamExecutor
 
 
 class AutoSpoilerCommand(BaseCommand):
@@ -39,7 +39,7 @@ class AutoSpoilerCommand(BaseCommand):
                           ApplicationParams.USER,
                           ApplicationParams.STOP
                           ),
-            CommandSyntax("Regarde quel tuin a mis un spoiler sur un tuin",
+            CommandSyntax("Regarde quel tuin a mis un spoiler sur un autre tuin",
                           cls._display_spoiler_info,
                           ApplicationParams.USER,
                           ApplicationParams.INFO

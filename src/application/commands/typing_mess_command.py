@@ -2,13 +2,13 @@ from typing import List
 
 from discord import Message, TextChannel, Member
 
+from application.param.app_params import ApplicationParams
 from application.database.db_typing_mess import DbTypingMessage, TypingMessage
 from core.command.command_base import BaseCommand
-from core.message.messages import Messages
-from application.app_params import ApplicationParams
-from core.param.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
-from core.param.syntax import CommandSyntax
 from core.command.types import HookType
+from core.message.messages import Messages
+from core.param.syntax import CommandSyntax
+from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
 
 
 class TypingMessageCommand(BaseCommand):
@@ -26,7 +26,9 @@ class TypingMessageCommand(BaseCommand):
 
     @classmethod
     def description_details(cls) -> [str, None]:
-        return """Un tuin peut avoir au maximum {} messages planifiés sur lui.""".format(cls._MAX_PER_USER)
+        return ("Tu peux laisser 1 message par tuin,"
+                " et un tuin peut avoir au maximum {} messages planifiés sur lui."
+                ).format(cls._MAX_PER_USER)
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:

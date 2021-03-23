@@ -2,8 +2,8 @@ from typing import Type
 
 from discord import Embed
 
-from core.param.params import ParamType
 from core.command.types import Command
+from core.param.params import ParamType
 from core.utils.parsing_utils import ParsingUtils
 
 

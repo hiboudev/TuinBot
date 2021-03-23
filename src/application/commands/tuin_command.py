@@ -2,7 +2,8 @@ from typing import List, Union
 
 from discord import Embed
 
-from core.command.command_base import BaseCommand, Commands
+from core.command.command_base import BaseCommand
+from core.command.repository import CommandRepository
 from core.param.syntax import CommandSyntax
 
 
@@ -24,7 +25,7 @@ class TuinBotCommand(BaseCommand):
     def get_help(cls) -> Union[Embed, str]:
         desc = "Ici on prend soin de nos tuins et on leur donne des " \
                "commandes débiles pour se troller mutuellement.```apache"
-        for command in Commands.LIST:
+        for command in CommandRepository.LIST:
             desc += "\n!%s : %s" % (command.name(), command.description())
         desc += "```\nTape une commande pour voir sa page d'aide."
 

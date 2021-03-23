@@ -2,13 +2,13 @@ from typing import List
 
 from discord import Message
 
+from application.param.app_params import ApplicationParams
 from application.database.db_reaction import DbAutoReaction
 from core.command.command_base import BaseCommand
-from application.app_params import ApplicationParams
-from core.param.executors import UserParamExecutor, EmojiParamExecutor, FixedValueParamExecutor
+from core.command.types import HookType
 from core.param.params import CommandParam, ParamType
 from core.param.syntax import CommandSyntax
-from core.command.types import HookType
+from core.executor.executors import UserParamExecutor, EmojiParamExecutor, FixedValueParamExecutor
 
 
 class AutoReactionCommand(BaseCommand):
@@ -24,7 +24,9 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     def description_details(cls) -> [str, None]:
-        return """Tu ne peux mettre qu'une réaction par tuin, et un tuin peut avoir au maximum {} réactions sur lui.""".format(cls._MAX_REACTION_PER_TARGET)
+        return ("Tu peux mettre 1 réaction par tuin,"
+                " et un tuin peut avoir au maximum {} réactions sur lui."
+                ).format(cls._MAX_REACTION_PER_TARGET)
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:

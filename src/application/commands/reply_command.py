@@ -3,12 +3,12 @@ from typing import List
 from discord import Message
 
 from application.database.db_reply import DbAutoReply, AutoReply
+from application.param.app_params import ApplicationParams
 from core.command.command_base import BaseCommand
-from core.message.messages import Messages
-from application.app_params import ApplicationParams
-from core.param.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
-from core.param.syntax import CommandSyntax
 from core.command.types import HookType
+from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
+from core.message.messages import Messages
+from core.param.syntax import CommandSyntax
 
 
 class ReplyMessageCommand(BaseCommand):
@@ -24,7 +24,9 @@ class ReplyMessageCommand(BaseCommand):
 
     @classmethod
     def description_details(cls) -> [str, None]:
-        return """Un tuin peut avoir au maximum {} messages planifiés sur lui.""".format(cls._MAX_PER_USER)
+        return ("Tu peux laisser 1 message par tuin,"
+                " et un tuin peut avoir au maximum {} messages planifiés sur lui."
+                ).format(cls._MAX_PER_USER)
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:

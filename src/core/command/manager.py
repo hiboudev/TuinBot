@@ -5,8 +5,8 @@ from typing import Union
 from discord import Message, Client, TextChannel, User, Member
 from discord.abc import Messageable
 
-from core.command.command_base import Commands
 from core.command.factory import CommandFactory
+from core.command.repository import CommandRepository
 from core.command.types import HookType
 
 
@@ -26,7 +26,7 @@ class CommandManager:
 
         if not cls._parse_command(message, client):
             # we don't apply hooks on a command message
-            for hook in Commands.get_hooks(HookType.MESSAGE):
+            for hook in CommandRepository.get_hooks(HookType.MESSAGE):
                 hook.execute_message_hook(message)
 
     # noinspection PyUnusedLocal
@@ -42,7 +42,7 @@ class CommandManager:
         if not user.guild:
             return
 
-        for hook in Commands.get_hooks(HookType.TYPING):
+        for hook in CommandRepository.get_hooks(HookType.TYPING):
             hook.execute_typing_hook(channel, user)
 
     @staticmethod
