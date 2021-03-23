@@ -23,7 +23,6 @@ intents = Intents.default()
 intents.members = True
 intents.typing = True
 # intents.presences = True
-# AppProperties
 
 bot = DiscordBot(activity_name=TuinBotCommand.name(), intents=intents)
 bot.run(AppProperties.bot_token())

@@ -15,11 +15,12 @@ class DiscordBot(Client):
         print("Starting Discord bot...")
 
     async def on_ready(self):
-        print('Logged on as {0}!'.format(self.user))
+        print(f"Logged in as {self.user}!")
         await self.change_presence(activity=Game("!" + self.activity_name))
 
     async def on_message(self, message: Message):
         CommandManager.manage_message(message, self)
 
+    # noinspection PyMethodMayBeStatic
     async def on_typing(self, channel: Messageable, user: Union[User, Member], when: datetime):
         CommandManager.manage_typing(channel, user, when)

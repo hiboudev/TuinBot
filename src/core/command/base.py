@@ -8,7 +8,7 @@ from discord import Message, Client, Embed
 from core.command.types import Command
 from core.executor.base import ParamResultType
 from core.executor.factory import ParamExecutorFactory
-from core.message.messages import HelpMessageBuilder, Messages
+from core.message.messages import Messages
 from core.param.syntax import CommandSyntax
 from core.utils.utils import Utils
 
@@ -123,7 +123,7 @@ class BaseCommand(Command, ABC):
     def _execute_db_bool_request(cls, func: Callable, message):
         result = func()
         if not result:
-            cls._reply(message, Messages.nothing_to_do())
+            cls._reply(message, Messages.nothing_to_do)
 
         return result
 
@@ -147,4 +147,4 @@ class BaseCommand(Command, ABC):
 
     @classmethod
     def get_help(cls) -> Union[Embed, str]:
-        return HelpMessageBuilder.build(cls)
+        return Messages.build_help(cls)

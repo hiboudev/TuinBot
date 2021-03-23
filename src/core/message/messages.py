@@ -4,59 +4,14 @@ from discord import Embed
 
 from core.command.types import Command
 from core.param.params import ParamType
-from core.utils.parsing_utils import ParsingUtils
 
 
 class Messages:
-    _HOOK_EMBED_COLOR = 0x17907e
+    nothing_to_do = "Il n'y a rien à faire."
 
     @staticmethod
-    def nothing_to_do() -> str:
-        return "Il n'y a rien à faire."
-
-    @classmethod
-    def get_hook_embed(cls, title: str = None, description: str = None) -> Embed:
-        return Embed(title=title, description=description, color=cls._HOOK_EMBED_COLOR)
-
-    @classmethod
-    def get_recorded_message_embed(cls, content: str, target_id: int,
-                                   author_name: str = None) -> Embed:
-        # TODO cette méthode devrait être dans le package "application"
-        # TODO 2 : et elle devrait être appelée uniquement avant de mettre en BDD
-        # TODO 3 : et il faudrait utiliser format_links en y ajoutant le gras
-        extracts = ParsingUtils.extract_links(content)
-
-        user_message = "**" + extracts.message + "**" if extracts.message else ""
-
-        description = "{user_message} <@{target_id}>{message_links_sep}{links}".format(
-            user_message=user_message,
-            target_id=target_id,
-            message_links_sep="\n" if extracts.links else "",
-            links="\n".join(extracts.links)
-        )
-
-        embed = cls.get_hook_embed(description=description)
-
-        if author_name:
-            embed.set_footer(text="Signé {}".format(author_name))
-
-        return embed
-
-    @staticmethod
-    def get_memo_embed(title: str, content: str, footer: str = None) -> Embed:
-        # TODO cette méthode devrait être dans le package "application"
-        embed = Embed(title=title, description=content, color=0x594566)
-        if footer:
-            embed.set_footer(text=footer)
-
-        return embed
-
-
-class HelpMessageBuilder:
-
-    @staticmethod
-    def build(command: Type[Command]) -> Embed:
-        embed = Embed(title="Commande __{name}__".format(name=command.name()),
+    def build_help(command: Type[Command]) -> Embed:
+        embed = Embed(title=f"Commande __{command.name()}__",
                       description="*%s*\n\u200B" % command.description(),
                       color=0x15659e)
 

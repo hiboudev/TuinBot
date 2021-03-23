@@ -15,7 +15,7 @@ class AppProperties:
         if is_beta != "0" and is_beta != "1":
             raise Exception("Config 'is_beta' should be 0 or 1")
 
-        print("Using config {}!".format("Beta" if cls.is_beta() else "Release"))
+        print("Using config %s!" % "Beta" if cls.is_beta() else "Release")
 
     @classmethod
     def is_beta(cls) -> bool:

@@ -3,10 +3,10 @@ from typing import List
 from discord import Message
 
 from application.database.db_memo import DbMemo
+from application.message.messages import AppMessages
 from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.executor.executors import TextParamExecutor, FixedValueParamExecutor
-from core.message.messages import Messages
 from core.param.params import CommandParam, ParamType
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
@@ -94,7 +94,7 @@ class MemoCommand(BaseCommand):
         memo = DbMemo.get_memo(message.author.id, name_executor.get_text())
         if memo:
             cls._reply(message,
-                       Messages.get_memo_embed(memo.name, memo.content),
+                       AppMessages.get_memo_embed(memo.name, memo.content),
                        20)
         else:
             cls._display_error(message, "Aucun mémo trouvé contenant le terme `{}`.".format(name_executor.get_text()))
@@ -116,9 +116,9 @@ class MemoCommand(BaseCommand):
             cls._reply(message, "Tu n'as aucun mémo enregistré.")
         else:
             cls._reply(message,
-                       Messages.get_memo_embed("Mes mémos",
-                                               "\u00A0\u00A0\u00A0".join(["`" + memo + "`" for memo in memos]),
-                                               "{} / {}".format(len(memos), cls._MAX_PER_USER)
-                                               ),
+                       AppMessages.get_memo_embed("Mes mémos",
+                                                  "\u00A0\u00A0\u00A0".join(["`" + memo + "`" for memo in memos]),
+                                                  "{} / {}".format(len(memos), cls._MAX_PER_USER)
+                                                  ),
                        20
                        )

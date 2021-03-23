@@ -2,13 +2,13 @@ from typing import List
 
 from discord import Message, TextChannel, Member
 
-from application.param.app_params import ApplicationParams
 from application.database.db_typing_mess import DbTypingMessage, TypingMessage
+from application.message.messages import AppMessages
+from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.command.types import HookType
-from core.message.messages import Messages
-from core.param.syntax import CommandSyntax
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
+from core.param.syntax import CommandSyntax
 
 
 class TypingMessageCommand(BaseCommand):
@@ -122,7 +122,7 @@ class TypingMessageCommand(BaseCommand):
         for message in messages:
             author = channel.guild.get_member(message.author_id)
 
-            embed = Messages.get_recorded_message_embed(
+            embed = AppMessages.get_recorded_message_embed(
                 message.message,
                 user.id,
                 None if not author else author.display_name

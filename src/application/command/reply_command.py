@@ -3,11 +3,11 @@ from typing import List
 from discord import Message
 
 from application.database.db_reply import DbAutoReply, AutoReply
+from application.message.messages import AppMessages
 from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
-from core.message.messages import Messages
 from core.param.syntax import CommandSyntax
 
 
@@ -119,7 +119,7 @@ class ReplyMessageCommand(BaseCommand):
         for text_message in messages:
             author = message.guild.get_member(text_message.author_id)
 
-            embed = Messages.get_recorded_message_embed(
+            embed = AppMessages.get_recorded_message_embed(
                 text_message.message,
                 message.author.id,
                 None if not author else author.display_name

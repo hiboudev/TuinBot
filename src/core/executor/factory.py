@@ -1,9 +1,9 @@
 from typing import Dict, Type
 
 from core.executor.base import CommandParamExecutor
-from core.param.params import CommandParam, ParamType
 from core.executor.executors import UserParamExecutor, EmojiParamExecutor, FixedValueParamExecutor, IntParamExecutor, \
     TextParamExecutor
+from core.param.params import CommandParam, ParamType
 
 
 class ParamExecutorFactory:
