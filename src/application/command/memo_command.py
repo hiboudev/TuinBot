@@ -87,7 +87,7 @@ class MemoCommand(BaseCommand):
         if DbMemo.edit_memo(message.author.id, name_executor.get_text(), content_executor.get_text()):
             cls._reply(message, "Mémo [**{}**] édité !".format(name_executor.get_text()))
         else:
-            cls._display_error(message, "Aucun mémo trouvé avec le nom [**{}**]".format(name_executor.get_text()))
+            cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
 
     @classmethod
     def _get_memo(cls, message: Message, name_executor: TextParamExecutor):
@@ -97,7 +97,7 @@ class MemoCommand(BaseCommand):
                        Messages.get_memo_embed(memo.name, memo.content),
                        20)
         else:
-            cls._reply(message, "Aucun mémo trouvé contenant le terme `{}`.".format(name_executor.get_text()))
+            cls._display_error(message, "Aucun mémo trouvé contenant le terme `{}`.".format(name_executor.get_text()))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -105,7 +105,7 @@ class MemoCommand(BaseCommand):
         if DbMemo.remove_memo(message.author.id, name_executor.get_text()):
             cls._reply(message, "Mémo [**{}**] supprimé !".format(name_executor.get_text()))
         else:
-            cls._reply(message, "Le mémo [**{}**] n'existe pas.".format(name_executor.get_text()))
+            cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -117,7 +117,8 @@ class MemoCommand(BaseCommand):
         else:
             cls._reply(message,
                        Messages.get_memo_embed("Mes mémos",
-                                               "\u00A0\u00A0\u00A0".join(["`" + memo + "`" for memo in memos])
+                                               "\u00A0\u00A0\u00A0".join(["`" + memo + "`" for memo in memos]),
+                                               "{} / {}".format(len(memos), cls._MAX_PER_USER)
                                                ),
                        20
                        )

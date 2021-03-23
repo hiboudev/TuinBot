@@ -43,9 +43,13 @@ class Messages:
         return embed
 
     @staticmethod
-    def get_memo_embed(title: str, content: str) -> Embed:
+    def get_memo_embed(title: str, content: str, footer: str = None) -> Embed:
         # TODO cette méthode devrait être dans le package "application"
-        return Embed(title=title, description=content, color=0x594566)
+        embed = Embed(title=title, description=content, color=0x594566)
+        if footer:
+            embed.set_footer(text=footer)
+
+        return embed
 
 
 class HelpMessageBuilder:

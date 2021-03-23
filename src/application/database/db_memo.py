@@ -98,16 +98,14 @@ class DbMemo:
 
     @classmethod
     def count_user_memos(cls, author_id: int) -> int:
-        sql = """
-                    SELECT COUNT(*)
-                        FROM
-                            memo
-                        WHERE
-                            author_id = %(author_id)s
-                    """
-
         with DatabaseConnection() as cursor:
-            cursor.execute(sql,
+            cursor.execute("""
+                                SELECT COUNT(*)
+                                    FROM
+                                        memo
+                                    WHERE
+                                        author_id = %(author_id)s
+                                """,
                            {"author_id": author_id})
 
             return cursor.fetchone()[0]

@@ -20,7 +20,7 @@ class AutoReactionCommand(BaseCommand):
 
     @staticmethod
     def description() -> str:
-        return "Ajoute une réaction automatique aux messages d'un tuin."
+        return "Ajoute une réaction sous tous les messages d'un tuin."
 
     @classmethod
     def description_details(cls) -> [str, None]:
@@ -33,17 +33,17 @@ class AutoReactionCommand(BaseCommand):
         emoji_param = CommandParam("emoji", "Un emoji qui lui collera au cul pour un moment.", ParamType.EMOJI)
 
         syntaxes = [
-            CommandSyntax("Ajoute une réaction sur un tuin",
+            CommandSyntax("Ajoute une réaction",
                           cls._add_reaction,
                           ApplicationParams.USER,
                           emoji_param
                           ),
-            CommandSyntax("Enlève ta réaction sur un tuin",
+            CommandSyntax("Enlève ta réaction",
                           cls._remove_reaction,
                           ApplicationParams.USER,
                           ApplicationParams.STOP,
                           ),
-            CommandSyntax("Liste les réactions mises sur un tuin",
+            CommandSyntax("Affiche les réactions mises sur un tuin",
                           cls._list_reactions,
                           ApplicationParams.USER,
                           ),
@@ -87,7 +87,7 @@ class AutoReactionCommand(BaseCommand):
                                                                          ),
                                         message):
             cls._reply(message,
-                       "Réaction automatique %s ajoutée à **%s** !" % (
+                       "Réaction %s ajoutée à **%s** !" % (
                            emoji_executor.get_emoji(), user_executor.get_user().display_name))
 
     # noinspection PyUnusedLocal
@@ -99,7 +99,7 @@ class AutoReactionCommand(BaseCommand):
                                                                             message.author.id,
                                                                             user_executor.get_user().id),
                                         message):
-            cls._reply(message, "Réaction automatique retirée de **%s** !" % user_executor.get_user().display_name)
+            cls._reply(message, "Réaction retirée de **%s** !" % user_executor.get_user().display_name)
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -108,14 +108,14 @@ class AutoReactionCommand(BaseCommand):
                                         DbAutoReaction.remove_all_auto_reactions(message.guild.id,
                                                                                  message.author.id),
                                         message):
-            cls._reply(message, "OK, j'ai viré les réactions automatiques que ces sales tuins t'avaient mises !")
+            cls._reply(message, "OK, j'ai viré les réactions que ces sales tuins t'avaient mises !")
 
     @classmethod
     def _list_reactions(cls, message: Message, user_executor: UserParamExecutor):
         reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
                                                       user_executor.get_user().id)
         cls._reply(message,
-                   "**%s** a %s réaction(s) automatique(s) : %s" % (
+                   "**%s** a %s réaction(s) : %s" % (
                        user_executor.get_user().display_name, len(reactions), " ".join(reactions)))
 
     @staticmethod
