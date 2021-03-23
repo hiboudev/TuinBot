@@ -98,10 +98,10 @@ class ParsingUtils:
     def get_emoji(text: str, client: Client) -> [str, None]:
         emojis = emoji_lis(text, "en")
 
-        if not emojis:
-            return ParsingUtils.get_custom_emoji(text, client)
+        if emojis:
+            return emojis[0]["emoji"]
 
-        return emojis[0]["emoji"]
+        return ParsingUtils.get_custom_emoji(text, client)
 
     @classmethod
     def get_custom_emoji(cls, text: str, client: Client) -> [str, None]:

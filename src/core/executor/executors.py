@@ -21,11 +21,11 @@ class UserParamExecutor(CommandParamExecutor):
         return True
 
     def _process_param(self, value: str, message: Message, client: Client) -> bool:
+        # TODO enlever ça de tout le projet sauf le manager
         if not isinstance(message.channel, TextChannel):
             return False
 
-        # TODO ce serait bien de stocker les min/max sur le param,
-        # mais comment bien gérer la doc selon si c'est un chiffre ou un string ?
+        # TODO ajouter une config optionnelle pour ce min value
         if len(value) < 3:
             return self._set_error("Le nom d'utilisateur doit faire au moins 3 caractères.")
 
