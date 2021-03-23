@@ -28,8 +28,8 @@ class MemoCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
-        name_param = CommandParam("nom", "Nom du mémo", ParamType.TEXT)
-        name_part_param = CommandParam("nom", "Une partie du nom du mémo", ParamType.TEXT)
+        name_param = CommandParam("nom", "Nom du mémo.", ParamType.TEXT)
+        name_part_param = CommandParam("nom", "Une partie du nom du mémo.", ParamType.TEXT)
         edit_param = CommandParam("edit", "", ParamType.FIXED_VALUE)
 
         syntaxes = [
@@ -96,7 +96,7 @@ class MemoCommand(BaseCommand):
                        Messages.get_memo_embed(memo.name, memo.content),
                        20)
         else:
-            cls._reply(message, "Aucun mémo trouvé avec le nom [**{}**].".format(name_executor.get_text()))
+            cls._reply(message, "Aucun mémo trouvé contenant le terme `{}`.".format(name_executor.get_text()))
 
     # noinspection PyUnusedLocal
     @classmethod
