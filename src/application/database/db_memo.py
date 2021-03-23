@@ -37,9 +37,12 @@ class DbMemo:
                                 WHERE
                                     author_id=%(author_id)s
                                 AND
-                                    name = %(name)s
+                                    name LIKE %(name)s
+                                ORDER BY
+                                    name
+                                LIMIT 1
                                 """,
-                           {"author_id": author_id, "name": name})
+                           {"author_id": author_id, "name": "%" + name + "%"})
 
             result = cursor.fetchone()
             return None if not result else Memo(result[0], result[1])
@@ -69,6 +72,8 @@ class DbMemo:
                                     memo
                                 WHERE
                                     author_id=%(author_id)s
+                                ORDER BY
+                                    name
                                 """,
                            {"author_id": author_id})
 
