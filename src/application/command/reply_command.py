@@ -12,7 +12,7 @@ from core.param.syntax import CommandSyntax
 
 
 class ReplyMessageCommand(BaseCommand):
-    _MAX_PER_USER = 3
+    _MAX_PER_USER = 2
 
     @staticmethod
     def name() -> str:
@@ -25,7 +25,7 @@ class ReplyMessageCommand(BaseCommand):
     @classmethod
     def description_details(cls) -> [str, None]:
         return ("Tu peux laisser 1 message par tuin,"
-                " et un tuin peut avoir au maximum {} messages planifiés sur lui."
+                " et un tuin peut avoir au maximum {} message(s) planifié(s) sur lui."
                 ).format(cls._MAX_PER_USER)
 
     @classmethod
@@ -57,7 +57,7 @@ class ReplyMessageCommand(BaseCommand):
         if typing_count >= cls._MAX_PER_USER:
             cls._reply(
                 message,
-                "Oups, il y a déjà {} messages enregistrés pour **{}**, il va falloir attendre ton tour !".format(
+                "Oups, il y a déjà {} message(s) enregistré(s) pour **{}**, il va falloir attendre ton tour !".format(
                     typing_count, user_executor.get_user().display_name)
             )
 
