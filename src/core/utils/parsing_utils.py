@@ -115,12 +115,8 @@ class ParsingUtils:
 
     @classmethod
     def extract_links(cls, text: str) -> LinkExtract:
-        message = text
-        links = []
-
-        for result in cls._link_reg_ex.findall(text):
-            message = message.replace(result, "")
-            links.append(result)
+        links = cls._link_reg_ex.findall(text)
+        message = cls._link_reg_ex.sub("", text)
 
         return LinkExtract(message, links)
 
