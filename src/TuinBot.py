@@ -10,12 +10,7 @@ from core.client.bot import DiscordBot
 from core.command.repository import CommandRepository
 from core.data.properties import AppProperties
 
-IS_BETA = True
-
-PROPERTIES_PATH = "../data/bot.properties"
-BETA_PROPERTIES_PATH = "../data/bot-beta.properties"
-
-AppProperties.load(BETA_PROPERTIES_PATH if IS_BETA else PROPERTIES_PATH)
+AppProperties.load("../data/bot.properties")
 
 CommandRepository.set_command_list(TuinBotCommand,
                                    AutoReactionCommand,

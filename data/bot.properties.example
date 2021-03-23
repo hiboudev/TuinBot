@@ -1,4 +1,8 @@
+is_beta=1
+
 bot_token=xxx
+bot_token_beta=xxx
+
 db_name=xxx
 db_host=xxx
 db_user=xxx

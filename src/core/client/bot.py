@@ -12,6 +12,7 @@ class DiscordBot(Client):
     def __init__(self, activity_name: str = None, **options):
         super().__init__(**options)
         self.activity_name = activity_name
+        print("Starting Discord bot...")
 
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
