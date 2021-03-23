@@ -16,7 +16,7 @@ class LinkExtract:
 
 
 class ParsingUtils:
-    _link_reg_ex = re.compile(r"http[s]?://[^\s]+")
+    _link_reg_ex = re.compile(r"(http[s]?://[^\s]+)")
     _emoji_reg_ex = re.compile(r"^(?P<emoji_string><:(?P<name>[^:]+):(?P<id>\d+)>)")
 
     @staticmethod
@@ -119,6 +119,10 @@ class ParsingUtils:
         message = cls._link_reg_ex.sub("", text)
 
         return LinkExtract(message, links)
+
+    @classmethod
+    def format_links(cls, text: str) -> str:
+        return cls._link_reg_ex.sub(r"\n\g<1>\n", text)
 
     @classmethod
     def is_unique_link(cls, text: str) -> bool:

@@ -9,6 +9,7 @@ from core.executor.executors import TextParamExecutor, FixedValueParamExecutor
 from core.message.messages import Messages
 from core.param.params import CommandParam, ParamType
 from core.param.syntax import CommandSyntax
+from core.utils.parsing_utils import ParsingUtils
 
 
 class MemoCommand(BaseCommand):
@@ -74,7 +75,7 @@ class MemoCommand(BaseCommand):
 
         name = name_executor.get_text().replace("`", "")
 
-        if DbMemo.add_memo(message.author.id, name, content_executor.get_text()):
+        if DbMemo.add_memo(message.author.id, name, ParsingUtils.format_links(content_executor.get_text())):
             cls._reply(message, "Mémo [**{}**] ajouté !".format(name))
         else:
             cls._display_error(message, "Le mémo [**{}**] existe déjà, veux-tu l'éditer ?".format(name))

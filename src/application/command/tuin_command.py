@@ -23,8 +23,10 @@ class TuinBotCommand(BaseCommand):
 
     @classmethod
     def get_help(cls) -> Union[Embed, str]:
-        desc = "Ici on prend soin de nos tuins et on leur donne des " \
-               "commandes débiles pour se troller mutuellement.```apache"
+        desc = ("Ici on prend soin de nos tuins et on leur donne des "
+                "commandes débiles pour se troller mutuellement."
+                "\nMais certaines peuvent aussi être utiles.```apache"
+                )
         for command in CommandRepository.LIST:
             desc += "\n!%s : %s" % (command.name(), command.description())
         desc += "```\nTape une commande pour voir sa page d'aide."

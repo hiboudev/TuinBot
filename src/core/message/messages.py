@@ -22,6 +22,8 @@ class Messages:
     def get_recorded_message_embed(cls, content: str, target_id: int,
                                    author_name: str = None) -> Embed:
         # TODO cette méthode devrait être dans le package "application"
+        # TODO 2 : et elle devrait être appelée uniquement avant de mettre en BDD
+        # TODO 3 : et il faudrait utiliser format_links en y ajoutant le gras
         extracts = ParsingUtils.extract_links(content)
 
         user_message = "**" + extracts.message + "**" if extracts.message else ""
