@@ -17,7 +17,7 @@ class CommandManager:
         if message.author.bot:
             return
 
-        # Guild is not always known (maybe in private messages), but our commands needs a guild.
+        # Guild is not always known (maybe in private messages), but our command needs a guild.
         if not message.guild:
             return
 

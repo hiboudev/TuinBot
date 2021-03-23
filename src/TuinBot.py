@@ -1,15 +1,15 @@
 from discord import Intents
 
-from application.commands.reac_command import AutoReactionCommand
-from application.commands.reply_command import ReplyMessageCommand
-from application.commands.spoil_command import AutoSpoilerCommand
-from application.commands.tuin_command import TuinBotCommand
-from application.commands.typing_mess_command import TypingMessageCommand
+from application.command.reac_command import AutoReactionCommand
+from application.command.reply_command import ReplyMessageCommand
+from application.command.spoil_command import AutoSpoilerCommand
+from application.command.tuin_command import TuinBotCommand
+from application.command.typing_mess_command import TypingMessageCommand
 from core.client.bot import DiscordBot
 from core.command.repository import CommandRepository
 from core.data.properties import AppProperties
 
-IS_BETA = False
+IS_BETA = True
 
 PROPERTIES_PATH = "../data/bot.properties"
 BETA_PROPERTIES_PATH = "../data/bot-beta.properties"

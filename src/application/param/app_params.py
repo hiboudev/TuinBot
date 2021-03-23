@@ -2,7 +2,7 @@ from core.param.params import CommandParam, ParamType
 
 
 class ApplicationParams:
-    """Parameters used accross many commands."""
+    """Parameters used accross many command."""
 
     USER = CommandParam("tuin", "Une partie du nom du tuin.", ParamType.USER)
     STOP = CommandParam("stop", "", ParamType.FIXED_VALUE)
