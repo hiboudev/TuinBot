@@ -3,7 +3,7 @@ from typing import Union, Optional
 from discord import Message, TextChannel, User, Client
 
 from core.executor.base import CommandParamExecutor, ValueType
-from core.param.params import CommandParam, IntParamConfig
+from core.param.params import CommandParam
 from core.utils.parsing_utils import ParsingUtils
 
 

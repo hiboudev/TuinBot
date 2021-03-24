@@ -55,7 +55,7 @@ class ParamConfig(ABC, Generic[ValueType]):
         return False
 
 
-class IntParamConfig(ParamConfig[int]):
+class NumberMinMaxParamConfig(ParamConfig[Union[int, float]]):
 
     def __init__(self, min_value: int = None, max_value: int = None):
         super().__init__()
@@ -76,10 +76,37 @@ class IntParamConfig(ParamConfig[int]):
 
     @staticmethod
     def _get_type_checking() -> Type:
-        return int
+        return Union[int, float]
 
     def _validate(self, value: ValueType) -> bool:
         return self.min_value <= value <= self.max_value
+
+
+class TextMinMaxParamConfig(ParamConfig[str]):
+
+    def __init__(self, min_length: int = None, max_length: int = None):
+        super().__init__()
+        self.min_length = min_length
+        self.max_length = max_length
+
+        if self.min_length is None and self.max_length is None:
+            raise ValueError("One of both parameters must be set!")
+
+    def get_definition(self) -> str:
+        if self.min_length is not None and self.max_length is not None:
+            return f"entre {self.min_length} et {self.max_length} caractères"
+        elif self.min_length is not None:
+            return f"minimum {self.min_length} caractères"
+        elif self.max_length is not None:
+            return f"maximum {self.min_length} caractères"
+        return ""
+
+    @staticmethod
+    def _get_type_checking() -> Type:
+        return str
+
+    def _validate(self, value: ValueType) -> bool:
+        return self.min_length <= len(value) <= self.max_length
 
 
 class CommandParam:
