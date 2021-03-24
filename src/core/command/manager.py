@@ -1,3 +1,4 @@
+import re
 import shlex
 from datetime import datetime
 from typing import Union
@@ -11,6 +12,7 @@ from core.command.types import HookType
 
 
 class CommandManager:
+    _remove_bound_quotes_reg = re.compile(r"^\"(.*?)\"$")
 
     @classmethod
     def manage_message(cls, message: Message, client: Client):
@@ -45,8 +47,8 @@ class CommandManager:
         for hook in CommandRepository.get_hooks(HookType.TYPING):
             hook.execute_typing_hook(channel, user)
 
-    @staticmethod
-    def _parse_command(message: Message, client: Client) -> bool:
+    @classmethod
+    def _parse_command(cls, message: Message, client: Client) -> bool:
         content = message.content
 
         # Dunno when, but we can have a zero length message (maybe when a new user join the channel ?)
@@ -59,13 +61,11 @@ class CommandManager:
         if len(content) < 2:
             return False
 
-        # Use double quotes to insert spaces in a parameter value.
-        # Escape single quotes
-        # Note, if user inputs : !memo fdsf"fds fdsf
-        # ... it fails at spliting string, and we can't really display error to user actually
-        name_and_params = content[1:].replace("'", "\\'")
-        command_split = shlex.split(name_and_params)
-        command_split = [i.replace("\\'", "'") for i in command_split]
+        # Use quotes to insert spaces in a parameter value
+        command_split = [
+            cls._remove_bound_quotes_reg.sub(r"\g<1>", i)
+            for i in shlex.split(content[1:], posix=False)
+        ]
         command_name = command_split[0]
 
         command = CommandFactory.get_command(command_name)
