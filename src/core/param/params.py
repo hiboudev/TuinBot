@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from enum import Enum
 # noinspection PyUnresolvedReferences,PyProtectedMember
-from typing import Generic, TypeVar, Union, _GenericAlias, Type
+from typing import Generic, TypeVar, Union, _GenericAlias, Type, get_args
 
 
 class ParamType(Enum):
@@ -12,24 +12,17 @@ class ParamType(Enum):
     TEXT = 5
 
 
-ValueType = TypeVar('ValueType')
+SupportedType = TypeVar('SupportedType')
 
 
-class ParamConfig(ABC, Generic[ValueType]):
+class ParamConfig(ABC, Generic[SupportedType]):
 
     def __init__(self):
         self.__error = None
 
-    def validate(self, value: ValueType) -> bool:
-        refering_type = self._get_type_checking()
-
-        if isinstance(refering_type, _GenericAlias):
-            # noinspection PyUnresolvedReferences
-            refering_type = refering_type.__args__
-
-        if not isinstance(value, refering_type):
-            raise ValueError(
-                f"Value of param {self.__class__.__name__} must be of type {refering_type}!")
+    def validate(self, value: SupportedType) -> bool:
+        # We could type check value at runtime to ensure executor gave us
+        # the good type, but SyntaxValidator.validate_syntaxes() should be enough.
 
         return self._validate(value)
 
@@ -37,17 +30,8 @@ class ParamConfig(ABC, Generic[ValueType]):
     def get_definition(self) -> str:
         pass
 
-    @staticmethod
     @abstractmethod
-    def _get_type_checking() -> Type:
-        """Return the same type as the Generic used.
-        Cause I'd like to check at runtime that we get the good type,
-        and in the base class so we're quiet for sub-classing.
-        But I didn't find how to use the Generic[Type] for that purpose."""
-        return object
-
-    @abstractmethod
-    def _validate(self, value: ValueType) -> bool:
+    def _validate(self, value: SupportedType) -> bool:
         pass
 
     def _set_error(self, error: str) -> bool:
@@ -74,11 +58,7 @@ class NumberMinMaxParamConfig(ParamConfig[Union[int, float]]):
             return f"maximum {self.min_value}"
         return ""
 
-    @staticmethod
-    def _get_type_checking() -> Type:
-        return Union[int, float]
-
-    def _validate(self, value: ValueType) -> bool:
+    def _validate(self, value: SupportedType) -> bool:
         return self.min_value <= value <= self.max_value
 
 
@@ -101,12 +81,20 @@ class TextMinMaxParamConfig(ParamConfig[str]):
             return f"maximum {self.min_length} caractères"
         return ""
 
-    @staticmethod
-    def _get_type_checking() -> Type:
-        return str
-
-    def _validate(self, value: ValueType) -> bool:
+    def _validate(self, value: SupportedType) -> bool:
         return self.min_length <= len(value) <= self.max_length
+
+
+class TestParamConfig(ParamConfig[int]):
+
+    def __init__(self):
+        super().__init__()
+
+    def get_definition(self) -> str:
+        return "un truc à la con"
+
+    def _validate(self, value: SupportedType) -> bool:
+        return value == 3
 
 
 class CommandParam:

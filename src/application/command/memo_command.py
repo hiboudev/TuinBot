@@ -115,10 +115,13 @@ class MemoCommand(BaseCommand):
         if not memos:
             cls._reply(message, "Tu n'as aucun mémo enregistré.")
         else:
+            # Replace spaces with unbreakable so note titles containing space are not wrapped.
+            memos = ["`" + memo.replace(" ", "\u00A0") + "`" for memo in memos]
             cls._reply(message,
                        AppMessages.get_memo_embed("Mes mémos",
-                                                  "\u00A0\u00A0\u00A0".join(["`" + memo + "`" for memo in memos]),
+                                                  "\u00A0\u0020\u00A0".join(memos),
                                                   "{} / {}".format(len(memos), cls._MAX_PER_USER)
                                                   ),
                        20
                        )
+        # \u00A0\u0020\u00A0 : 2 unbreakable spaces to keep margin, and 1 normal space to wrap line between 2 titles

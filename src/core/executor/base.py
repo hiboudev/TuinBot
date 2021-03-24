@@ -12,10 +12,12 @@ class ParamResultType(Enum):
     INVALID = 2
 
 
-ValueType = TypeVar('ValueType')
+ValidatedType = TypeVar('ValidatedType')
 
 
-class CommandParamExecutor(Generic[ValueType]):
+class CommandParamExecutor(Generic[ValidatedType]):
+
+    TypeChecking = str
 
     def __init__(self, param: CommandParam):
         self.param = param
@@ -49,11 +51,11 @@ class CommandParamExecutor(Generic[ValueType]):
         pass
 
     @abstractmethod
-    def _validate_input_format(self, value: str) -> Optional[ValueType]:
+    def _validate_input_format(self, value: str) -> Optional[ValidatedType]:
         pass
 
     @abstractmethod
-    def _process_param(self, validated_value: ValueType, message: Message, client: Client) -> bool:
+    def _process_param(self, validated_value: ValidatedType, message: Message, client: Client) -> bool:
         pass
 
     def is_input_format_valid(self) -> bool:

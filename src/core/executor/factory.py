@@ -16,15 +16,16 @@ class ParamExecutorFactory:
     }
 
     @classmethod
-    def get_executor(cls, param: CommandParam) -> CommandParamExecutor:
-        if param.param_type not in cls._executors_by_type:
+    def get_executor_class(cls, param_type: ParamType) -> Type[CommandParamExecutor]:
+        if param_type not in cls._executors_by_type:
             raise Exception("No param executor for this type!")
 
-        return cls._executors_by_type[param.param_type](param)
+        return cls._executors_by_type[param_type]
 
     @classmethod
-    def get_executor_class(cls, param: CommandParam) -> Type[CommandParamExecutor]:
-        if param.param_type not in cls._executors_by_type:
-            raise Exception("No param executor for this type!")
+    def get_executor(cls, param: CommandParam) -> CommandParamExecutor:
+        return cls.get_executor_class(param.param_type)(param)
 
-        return cls._executors_by_type[param.param_type]
+    @classmethod
+    def has_executor(cls, param_type: ParamType):
+        return param_type in cls._executors_by_type

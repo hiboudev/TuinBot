@@ -1,7 +1,7 @@
 from typing import List, Dict, Type, Iterable
 
 from core.command.types import Command, HookType
-from core.param.syntax import CommandSyntax
+from core.param.validator import SyntaxValidator
 
 
 class CommandRepository:
@@ -33,4 +33,4 @@ class CommandRepository:
     @classmethod
     def _validate_commands_syntax(cls, commands: Iterable[Type[Command]]):
         for command in commands:
-            CommandSyntax.validate_syntaxes(command.get_syntaxes())
+            SyntaxValidator.validate_syntaxes(command.get_syntaxes())

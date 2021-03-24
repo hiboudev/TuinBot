@@ -3,11 +3,11 @@ from typing import List
 from discord import Message, User
 
 from application.database.db_spoiler import DbAutoSpoiler
+from application.message.messages import AppMessages
 from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.executor.executors import UserParamExecutor, FixedValueParamExecutor
-from core.message.messages import Messages
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
 
@@ -139,7 +139,7 @@ class AutoSpoilerCommand(BaseCommand):
                                 links="\n".join(extracts.links)
                                 )
 
-        embed = Messages.get_hook_embed(
+        embed = AppMessages.get_hook_embed(
             title=":popcorn:\u00A0\u00A0\u00A0\u00A0Avis à la population !\u00A0\u00A0\u00A0\u00A0:popcorn:",
             description=description
         )

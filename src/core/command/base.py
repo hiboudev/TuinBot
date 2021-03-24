@@ -78,9 +78,10 @@ class BaseCommand(Command, ABC):
             if syntax_is_valid:
                 syntax.callback(message, *syntax_executors)  # [:len(syntax.params)])
                 return
-            elif executor:
-                # TODO voir comment afficher l'erreur, quand aucun param n'a validé l'entrée
-                print(executor.param.name)
+
+        if not syntax_is_valid and executor:
+            # TODO voir comment afficher l'erreur, quand aucun param n'a validé l'entrée
+            print("last executor ran:", executor.param.name)
 
         # No valid syntax nor giving error, can we reach this?
         cls._display_error(message, """Tu as dû faire une petite erreur quelque part.""")
