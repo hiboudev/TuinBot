@@ -59,8 +59,13 @@ class CommandManager:
         if len(content) < 2:
             return False
 
-        # Use quotes to insert spaces in a parameter value
-        command_split = shlex.split(content[1:])
+        # Use double quotes to insert spaces in a parameter value.
+        # Escape single quotes
+        # Note, if user inputs : !memo fdsf"fds fdsf
+        # ... it fails at spliting string, and we can't really display error to user actually
+        name_and_params = content[1:].replace("'", "\\'")
+        command_split = shlex.split(name_and_params)
+        command_split = [i.replace("\\'", "'") for i in command_split]
         command_name = command_split[0]
 
         command = CommandFactory.get_command(command_name)
