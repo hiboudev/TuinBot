@@ -46,6 +46,7 @@ class BaseCommand(Command, ABC):
             syntax_executors = []
             syntax_is_valid = True
             param_index = 0
+            executor = None
 
             for param in syntax.params:
                 if param_index not in all_executors:
@@ -77,6 +78,9 @@ class BaseCommand(Command, ABC):
             if syntax_is_valid:
                 syntax.callback(message, *syntax_executors)  # [:len(syntax.params)])
                 return
+            elif executor:
+                # TODO voir comment afficher l'erreur, quand aucun param n'a validé l'entrée
+                print(executor.param.name)
 
         # No valid syntax nor giving error, can we reach this?
         cls._display_error(message, """Tu as dû faire une petite erreur quelque part.""")

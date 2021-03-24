@@ -22,11 +22,21 @@ class Messages:
             params_desc = []
 
             for param in syntax.params:
+
+                config_part = []
+                for config in param.configs:
+                    config_part.append(config.get_definition())
+
                 param_is_variable = param.param_type != ParamType.FIXED_VALUE
 
                 if param_is_variable:
                     param_display_name = "[%s]" % param.name
-                    params_desc.append("**%s** : %s" % (param_display_name, param.description))
+                    params_desc.append("**%s** : %s%s." %
+                                       (param_display_name,
+                                        param.description,
+                                        "" if not config_part else f" ({', '.join(config_part)})"
+                                        )
+                                       )
                 else:
                     param_display_name = "%s" % param.name
 

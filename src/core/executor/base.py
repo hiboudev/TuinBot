@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from enum import Enum
+from typing import TypeVar, Generic, Optional
 
 from discord import Message, Client
 
@@ -11,7 +12,10 @@ class ParamResultType(Enum):
     INVALID = 2
 
 
-class CommandParamExecutor:
+ValueType = TypeVar('ValueType')
+
+
+class CommandParamExecutor(Generic[ValueType]):
 
     def __init__(self, param: CommandParam):
         self.param = param
@@ -20,12 +24,18 @@ class CommandParamExecutor:
         self.__is_input_format_valid = False
 
     def set_value(self, value: str, message: Message, client: Client):
-        if not self._validate_input_format(value):
+        validated_value = self._validate_input_format(value)
+        if validated_value is None:
             return
-        else:
-            self.__is_input_format_valid = True
 
-        if self._process_param(value, message, client):
+        self.__is_input_format_valid = True
+
+        for config in self.param.configs:
+            if not config.validate(validated_value):
+                self._set_error(f"**{self.param.name}** invalide : `{config.get_definition()}`.")
+                return
+
+        if self._process_param(validated_value, message, client):
             self.__result_type = ParamResultType.VALID
 
     @staticmethod
@@ -39,11 +49,11 @@ class CommandParamExecutor:
         pass
 
     @abstractmethod
-    def _validate_input_format(self, value: str) -> bool:
+    def _validate_input_format(self, value: str) -> Optional[ValueType]:
         pass
 
     @abstractmethod
-    def _process_param(self, value: str, message: Message, client: Client) -> bool:
+    def _process_param(self, validated_value: ValueType, message: Message, client: Client) -> bool:
         pass
 
     def is_input_format_valid(self) -> bool:

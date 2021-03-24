@@ -30,7 +30,7 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
-        emoji_param = CommandParam("emoji", "Un emoji qui lui collera au cul pour un moment.", ParamType.EMOJI)
+        emoji_param = CommandParam("emoji", "Un emoji qui lui collera au cul pour un moment", ParamType.EMOJI)
 
         syntaxes = [
             CommandSyntax("Ajoute une réaction",

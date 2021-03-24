@@ -1,13 +1,13 @@
-from typing import Union
+from typing import Union, Optional
 
 from discord import Message, TextChannel, User, Client
 
-from core.executor.base import CommandParamExecutor
+from core.executor.base import CommandParamExecutor, ValueType
 from core.param.params import CommandParam, IntParamConfig
 from core.utils.parsing_utils import ParsingUtils
 
 
-class UserParamExecutor(CommandParamExecutor):
+class UserParamExecutor(CommandParamExecutor[str]):
 
     def __init__(self, param: CommandParam):
         super().__init__(param)
@@ -17,19 +17,18 @@ class UserParamExecutor(CommandParamExecutor):
     def always_validate_input_format() -> bool:
         return True
 
-    def _validate_input_format(self, value: str) -> bool:
-        return True
+    def _validate_input_format(self, value: str) -> Optional[ValueType]:
+        return value
 
-    def _process_param(self, value: str, message: Message, client: Client) -> bool:
-        # TODO enlever ça de tout le projet sauf le manager
+    def _process_param(self, validated_value: ValueType, message: Message, client: Client) -> bool:
         if not isinstance(message.channel, TextChannel):
             return False
 
         # TODO ajouter une config optionnelle pour ce min value
-        if len(value) < 3:
+        if len(validated_value) < 3:
             return self._set_error("Le nom d'utilisateur doit faire au moins 3 caractères.")
 
-        self._user = ParsingUtils.find_user(message.channel.members, value)
+        self._user = ParsingUtils.find_user(message.channel.members, validated_value)
 
         if self._user:
             return True
@@ -40,7 +39,7 @@ class UserParamExecutor(CommandParamExecutor):
         return self._user
 
 
-class EmojiParamExecutor(CommandParamExecutor):
+class EmojiParamExecutor(CommandParamExecutor[str]):
 
     def __init__(self, param: CommandParam):
         super().__init__(param)
@@ -50,11 +49,11 @@ class EmojiParamExecutor(CommandParamExecutor):
     def always_validate_input_format() -> bool:
         return True
 
-    def _validate_input_format(self, value: str) -> bool:
-        return True
+    def _validate_input_format(self, value: str) -> Optional[ValueType]:
+        return value
 
-    def _process_param(self, value: str, message: Message, client: Client) -> bool:
-        self._emoji = ParsingUtils.get_emoji(value, client)
+    def _process_param(self, validated_value: ValueType, message: Message, client: Client) -> bool:
+        self._emoji = ParsingUtils.get_emoji(validated_value, client)
 
         if self._emoji:
             return True
@@ -65,23 +64,25 @@ class EmojiParamExecutor(CommandParamExecutor):
         return self._emoji
 
 
-class FixedValueParamExecutor(CommandParamExecutor):
+class FixedValueParamExecutor(CommandParamExecutor[str]):
 
     @staticmethod
     def always_validate_input_format() -> bool:
         return False
 
-    def _validate_input_format(self, value: str) -> bool:
-        return value == self.param.name
-
-    def _process_param(self, value: str, message: Message, client: Client) -> bool:
+    def _validate_input_format(self, value: str) -> Optional[ValueType]:
         if value == self.param.name:
+            return value
+        return None
+
+    def _process_param(self, validated_value: ValueType, message: Message, client: Client) -> bool:
+        if validated_value == self.param.name:
             return True
         else:
             return self._set_error("Valeur invalide.")
 
 
-class IntParamExecutor(CommandParamExecutor):
+class IntParamExecutor(CommandParamExecutor[int]):
 
     def __init__(self, param: CommandParam):
         super().__init__(param)
@@ -91,27 +92,28 @@ class IntParamExecutor(CommandParamExecutor):
     def always_validate_input_format() -> bool:
         return False
 
-    def _validate_input_format(self, value: str) -> bool:
+    def _validate_input_format(self, value: str) -> Optional[ValueType]:
         try:
             self._int_value = int(value)
-            return True
+            return self._int_value
         except ValueError:
-            return False
+            return None
 
-    def _process_param(self, value: str, message: Message, client: Client) -> bool:
-        if self.param.config is None or not isinstance(self.param.config, IntParamConfig):
-            raise Exception("Config not found!")
-
-        if self.param.config.min_value <= self._int_value <= self.param.config.max_value:
-            return True
-        else:
-            return self._set_error("Valeur invalide.")
+    def _process_param(self, validated_value: ValueType, message: Message, client: Client) -> bool:
+        # if self.param.config is None or not isinstance(self.param.config, IntParamConfig):
+        #     raise Exception("Config not found!")
+        #
+        # if self.param.config.min_value <= self._int_value <= self.param.config.max_value:
+        #     return True
+        # else:
+        #     return self._set_error("Valeur invalide.")
+        return self.is_input_format_valid()
 
     def get_int(self) -> int:
         return self._int_value
 
 
-class TextParamExecutor(CommandParamExecutor):
+class TextParamExecutor(CommandParamExecutor[str]):
 
     def __init__(self, param: CommandParam):
         super().__init__(param)
@@ -121,11 +123,11 @@ class TextParamExecutor(CommandParamExecutor):
     def always_validate_input_format() -> bool:
         return True
 
-    def _validate_input_format(self, value: str) -> bool:
-        return True
+    def _validate_input_format(self, value: str) -> Optional[ValueType]:
+        return value
 
-    def _process_param(self, value: str, message: Message, client: Client) -> bool:
-        self._text = value
+    def _process_param(self, validated_value: ValueType, message: Message, client: Client) -> bool:
+        self._text = validated_value
         return True
 
     def get_text(self) -> str:

@@ -29,8 +29,8 @@ class MemoCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
-        name_param = CommandParam("nom", "Nom du mémo.", ParamType.TEXT)
-        name_part_param = CommandParam("nom", "Une partie du nom du mémo.", ParamType.TEXT)
+        name_param = CommandParam("nom", "Nom du mémo", ParamType.TEXT)
+        name_part_param = CommandParam("nom", "Une partie du nom du mémo", ParamType.TEXT)
         edit_param = CommandParam("edit", "", ParamType.FIXED_VALUE)
 
         syntaxes = [

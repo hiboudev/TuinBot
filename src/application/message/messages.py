@@ -13,9 +13,7 @@ class AppMessages:
     @classmethod
     def get_recorded_message_embed(cls, content: str, target_id: int,
                                    author_name: str = None) -> Embed:
-        # TODO cette méthode devrait être dans le package "application"
-        # TODO 2 : et elle devrait être appelée uniquement avant de mettre en BDD
-        # TODO 3 : et il faudrait utiliser format_links en y ajoutant le gras
+        # TODO : il faudrait utiliser format_links en y ajoutant le gras
         extracts = ParsingUtils.extract_links(content)
 
         user_message = "**" + extracts.message + "**" if extracts.message else ""
@@ -36,7 +34,6 @@ class AppMessages:
 
     @staticmethod
     def get_memo_embed(title: str, content: str, footer: str = None) -> Embed:
-        # TODO cette méthode devrait être dans le package "application"
         embed = Embed(title=title, description=content, color=0x594566)
         if footer:
             embed.set_footer(text=footer)
