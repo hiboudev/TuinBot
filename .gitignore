@@ -3,3 +3,4 @@ _prepa/
 **/__pycache__/**
 **/bot.properties
 **/_target/**
+src/test.py
