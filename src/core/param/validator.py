@@ -8,12 +8,17 @@ from core.utils.generic_utils import GenericUtils
 class SyntaxValidator:
 
     @classmethod
-    def validate_syntaxes(cls, syntaxes: List[CommandSyntax]):
+    def validate_syntaxes(cls, syntaxes: List[CommandSyntax], command_name: str):
+        """We're not checking everything.
+        TODO : exemple : si 2 commandes identiques se suivent, du moment qu'elles ont un discriminator
+        ça passe la validation. Il faudrait peut-être faire des vérifs par rapport au type des params,
+        à leurs configs...
+        """
         always_valid_param_count = set()
         for syntax in syntaxes:
             if syntax.always_validate_input_format:
                 if syntax.param_count in always_valid_param_count:
-                    raise Exception("One of the command syntaxes will never execute!")
+                    raise Exception(f"Syntax '{syntax.title}' in command '{command_name}' will never execute!")
                 always_valid_param_count.add(syntax.param_count)
 
             for param in syntax.params:
