@@ -12,7 +12,7 @@ from core.param.syntax import CommandSyntax
 
 
 class AutoReactionCommand(BaseCommand):
-    _MAX_REACTION_PER_TARGET = 6
+    _MAX_REACTION_PER_TARGET = 2
 
     @staticmethod
     def name() -> str:
@@ -20,11 +20,12 @@ class AutoReactionCommand(BaseCommand):
 
     @staticmethod
     def description() -> str:
-        return "Ajoute une réaction automatique sous tous les messages d'un tuin."
+        return "Ajoute une réaction automatique sous les messages d'un tuin."
 
     @classmethod
     def description_details(cls) -> [str, None]:
-        return ("Tu peux mettre 1 réaction par tuin,"
+        return ("La réaction n'apparaîtra que dans le salon où la commande a été tapée."
+                " Tu peux mettre 1 réaction par tuin,"
                 " et un tuin peut avoir au maximum {} réactions sur lui."
                 ).format(cls._MAX_REACTION_PER_TARGET)
 
@@ -60,9 +61,9 @@ class AutoReactionCommand(BaseCommand):
                       emoji_executor: EmojiParamExecutor):
 
         # Check max emoji limit
-        reaction_count = DbAutoReaction.count_target_reactions(message.guild.id,
-                                                               user_executor.get_user().id,
-                                                               message.author.id)
+        reaction_count = DbAutoReaction.count_total_target_reactions(message.guild.id,
+                                                                     user_executor.get_user().id,
+                                                                     message.author.id)
         if reaction_count >= cls._MAX_REACTION_PER_TARGET:
             cls._reply(message,
                        "Le tuin **{}** a déjà {} réactions sur lui, laissons-le respirer un peu.".format(
@@ -72,15 +73,17 @@ class AutoReactionCommand(BaseCommand):
 
         # Can add only one type of emoji per target, cause bot can't add the same several times.
         if DbAutoReaction.reaction_exists(message.guild.id,
+                                          message.channel.id,
                                           user_executor.get_user().id,
                                           emoji_executor.get_emoji()):
             cls._reply(message,
-                       "Cet emoji est déjà mis sur **%s**, il faudrait en choisir un autre." % (
+                       "Cet emoji est déjà mis sur **%s** dans ce salon, il faudrait en choisir un autre." % (
                            user_executor.get_user().display_name))
             return
 
         if cls._execute_db_bool_request(lambda:
                                         DbAutoReaction.add_auto_reaction(message.guild.id,
+                                                                         message.channel.id,
                                                                          message.author.id,
                                                                          user_executor.get_user().id,
                                                                          emoji_executor.get_emoji()
@@ -112,11 +115,25 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     def _list_reactions(cls, message: Message, user_executor: UserParamExecutor):
-        reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
-                                                      user_executor.get_user().id)
+        total_reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
+                                                            user_executor.get_user().id)
+
+        channel_reaction_part = ""
+        if total_reactions:
+            channel_reaction_count = DbAutoReaction.count_channel_target_reactions(message.guild.id,
+                                                                                   message.channel.id,
+                                                                                   user_executor.get_user().id)
+            channel_reaction_part = f" ({channel_reaction_count} dans ce salon)"
+
+        reactions_part = " : %s" % " ".join(total_reactions) if total_reactions else ""
+
         cls._reply(message,
-                   "**%s** a %s réaction(s) : %s" % (
-                       user_executor.get_user().display_name, len(reactions), " ".join(reactions)))
+                   "**%s** a %s réaction(s)%s%s" % (user_executor.get_user().display_name,
+                                                    len(total_reactions),
+                                                    channel_reaction_part,
+                                                    reactions_part
+                                                    )
+                   )
 
     @staticmethod
     def has_hook() -> bool:
@@ -129,7 +146,8 @@ class AutoReactionCommand(BaseCommand):
     @classmethod
     def execute_message_hook(cls, message: Message):
         reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
-                                                      message.author.id)
+                                                      message.author.id,
+                                                      message.channel.id)
 
         if reactions:
             cls._async(cls._execute_hook_async(message, reactions))
