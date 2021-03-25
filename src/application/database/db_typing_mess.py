@@ -13,17 +13,24 @@ class TypingMessage:
 class DbTypingMessage:
 
     @staticmethod
-    def add_typing_message(guild_id: int, author_id: int, target_id: int, message: str) -> bool:
+    def add_typing_message(guild_id: int, channel_id: int, author_id: int, target_id: int, message: str) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                             INSERT IGNORE INTO
-                                typing_message (guild_id, author_id, target_id, message)
-                            VALUES
-                                (%(guild_id)s, %(author_id)s, %(target_id)s, %(message)s)
+                                typing_message (guild_id, channel_id, author_id, target_id, message)
+                            VALUES (
+                                %(guild_id)s,
+                                %(channel_id)s,
+                                %(author_id)s,
+                                %(target_id)s,
+                                %(message)s
+                            )
                             ON DUPLICATE KEY UPDATE
+                                channel_id = %(channel_id)s,
                                 message = %(message)s
                            """,
-                           {"guild_id": guild_id, "author_id": author_id, "target_id": target_id, "message": message})
+                           {"guild_id": guild_id, "channel_id": channel_id, "author_id": author_id,
+                            "target_id": target_id, "message": message})
 
             return cursor.rowcount > 0
 
@@ -91,7 +98,7 @@ class DbTypingMessage:
             return None if not result else result[0]
 
     @classmethod
-    def use_typing_messages(cls, guild_id: int, target_id: int) -> List[TypingMessage]:
+    def use_typing_messages(cls, guild_id: int, channel_id: int, target_id: int) -> List[TypingMessage]:
         """Delete the spoiler from database."""
 
         with DatabaseConnection() as cursor:
@@ -103,9 +110,11 @@ class DbTypingMessage:
                                 WHERE
                                     guild_id=%(guild_id)s
                                 AND
+                                    channel_id=%(channel_id)s
+                                AND
                                     target_id = %(target_id)s
                                 """,
-                           {"guild_id": guild_id, "target_id": target_id})
+                           {"guild_id": guild_id, "channel_id": channel_id, "target_id": target_id})
 
             messages = [TypingMessage(i[0], i[1]) for i in cursor.fetchall()]
 
@@ -115,8 +124,10 @@ class DbTypingMessage:
                                 WHERE
                                     guild_id=%(guild_id)s
                                 AND
+                                    channel_id=%(channel_id)s
+                                AND
                                     target_id = %(target_id)s
                                 """,
-                           {"guild_id": guild_id, "target_id": target_id})
+                           {"guild_id": guild_id, "channel_id": channel_id, "target_id": target_id})
 
             return messages

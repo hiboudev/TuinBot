@@ -26,7 +26,8 @@ class TypingMessageCommand(BaseCommand):
 
     @classmethod
     def description_details(cls) -> [str, None]:
-        return ("Tu peux laisser 1 message par tuin,"
+        return ("Le message n'apparaîtra que dans le salon où la commande a été tapée."
+                " Tu peux laisser 1 message par tuin,"
                 " et un tuin peut avoir au maximum {} message(s) planifié(s) sur lui."
                 ).format(cls._MAX_PER_USER)
 
@@ -66,6 +67,7 @@ class TypingMessageCommand(BaseCommand):
 
         elif cls._execute_db_bool_request(lambda:
                                           DbTypingMessage.add_typing_message(message.guild.id,
+                                                                             message.channel.id,
                                                                              message.author.id,
                                                                              user_executor.get_user().id,
                                                                              text_executor.get_text()
@@ -112,7 +114,7 @@ class TypingMessageCommand(BaseCommand):
 
     @classmethod
     def execute_typing_hook(cls, channel: TextChannel, user: Member):
-        messages = DbTypingMessage.use_typing_messages(user.guild.id, user.id)
+        messages = DbTypingMessage.use_typing_messages(user.guild.id, channel.id, user.id)
 
         if messages:
             cls._async(cls._execute_hook_async(channel, user, messages))
