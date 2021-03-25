@@ -20,7 +20,7 @@ class AutoReactionCommand(BaseCommand):
 
     @staticmethod
     def description() -> str:
-        return "Ajoute une réaction sous tous les messages d'un tuin."
+        return "Ajoute une réaction automatique sous tous les messages d'un tuin."
 
     @classmethod
     def description_details(cls) -> [str, None]:

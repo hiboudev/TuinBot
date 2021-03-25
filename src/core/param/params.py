@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from enum import Enum
 # noinspection PyUnresolvedReferences,PyProtectedMember
-from typing import Generic, TypeVar, Union, _GenericAlias, Type, get_args
+from typing import Generic, TypeVar, Union, _GenericAlias, Type, get_args, List
 
 
 class ParamType(Enum):
@@ -10,6 +10,7 @@ class ParamType(Enum):
     FIXED_VALUE = 3
     INT = 4
     TEXT = 5
+    LIST = 6
 
 
 SupportedType = TypeVar('SupportedType')
@@ -59,7 +60,12 @@ class NumberMinMaxParamConfig(ParamConfig[Union[int, float]]):
         return ""
 
     def _validate(self, value: SupportedType) -> bool:
-        return self.min_value <= value <= self.max_value
+        if self.min_value is not None and self.min_value > value:
+            return False
+        if self.max_value is not None and self.max_value < value:
+            return False
+
+        return True
 
 
 class TextMinMaxParamConfig(ParamConfig[str]):
@@ -82,19 +88,27 @@ class TextMinMaxParamConfig(ParamConfig[str]):
         return ""
 
     def _validate(self, value: SupportedType) -> bool:
-        return self.min_length <= len(value) <= self.max_length
+        value_len = len(value)
+
+        if self.min_length is not None and self.min_length > value_len:
+            return False
+        if self.max_length is not None and self.max_length < value_len:
+            return False
+
+        return True
 
 
-class TestParamConfig(ParamConfig[int]):
+class ListParamConfig(ParamConfig[str]):
 
-    def __init__(self):
+    def __init__(self, *values: str):
         super().__init__()
+        self.values = values
 
     def get_definition(self) -> str:
-        return "un truc à la con"
+        return "valeurs possibles : " + ", ".join(self.values)
 
     def _validate(self, value: SupportedType) -> bool:
-        return value == 3
+        return value in self.values
 
 
 class CommandParam:
@@ -104,3 +118,12 @@ class CommandParam:
         self.description = description
         self.param_type = param_type
         self.configs = configs
+
+
+class ListCommandParam(CommandParam):
+
+    def __init__(self, name: str, description: str, values: List[str], *configs: ParamConfig):
+        super().__init__(name, description, ParamType.LIST, *configs)
+        self.values = values
+        # TODO archi : message en doublon avec l'executor, alors qu'avec la config on a tout dedans
+        self.description += " (valeurs possibles : %s)" % ", ".join(values)
