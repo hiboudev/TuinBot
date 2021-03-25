@@ -18,7 +18,7 @@ class UserParamExecutor(CommandParamExecutor[str]):
         return True
 
     def _validate_input_format(self, value: str) -> Optional[ValidatedType]:
-        return value
+        return value.strip()
 
     def _process_param(self, validated_value: ValidatedType, message: Message, client: Client) -> bool:
         if not isinstance(message.channel, TextChannel):
@@ -46,7 +46,7 @@ class EmojiParamExecutor(CommandParamExecutor[str]):
         return True
 
     def _validate_input_format(self, value: str) -> Optional[ValidatedType]:
-        return value
+        return value.strip()
 
     def _process_param(self, validated_value: ValidatedType, message: Message, client: Client) -> bool:
         self._emoji = ParsingUtils.get_emoji(validated_value, client)
@@ -67,6 +67,7 @@ class FixedValueParamExecutor(CommandParamExecutor[str]):
         return False
 
     def _validate_input_format(self, value: str) -> Optional[ValidatedType]:
+        value = value.strip()
         if value == self.param.name:
             return value
         self._set_error("Valeur invalide")
@@ -115,7 +116,7 @@ class TextParamExecutor(CommandParamExecutor[str]):
         return True
 
     def _validate_input_format(self, value: str) -> Optional[ValidatedType]:
-        return value
+        return value.strip()
 
     def _process_param(self, validated_value: ValidatedType, message: Message, client: Client) -> bool:
         self._text = validated_value
