@@ -33,4 +33,4 @@ class CommandRepository:
     @classmethod
     def _validate_commands_syntax(cls, commands: Iterable[Type[Command]]):
         for command in commands:
-            SyntaxValidator.validate_syntaxes(command.get_syntaxes())
+            SyntaxValidator.validate_syntaxes(command.get_syntaxes(), command.name())

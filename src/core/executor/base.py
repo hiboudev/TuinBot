@@ -17,22 +17,36 @@ ValidatedType = TypeVar('ValidatedType')
 
 class CommandParamExecutor(Generic[ValidatedType]):
 
-    TypeChecking = str
-
     def __init__(self, param: CommandParam):
         self.param = param
         self.__result_type = ParamResultType.INVALID
         self.__error = None
         self.__is_input_format_valid = False
 
+        self.__validating_configs = []
+        self.__not_validating_configs = []
+
+        for config in param.configs:
+            if config.is_input_validator():
+                self.__validating_configs.append(config)
+            else:
+                self.__not_validating_configs.append(config)
+
     def set_value(self, value: str, message: Message, client: Client):
+
         validated_value = self._validate_input_format(value)
+
         if validated_value is None:
             return
 
+        for config in self.__validating_configs:
+            if not config.validate(validated_value):
+                self._set_error(config.get_definition())
+                return
+
         self.__is_input_format_valid = True
 
-        for config in self.param.configs:
+        for config in self.__not_validating_configs:
             if not config.validate(validated_value):
                 self._set_error(config.get_definition())
                 return
@@ -44,9 +58,8 @@ class CommandParamExecutor(Generic[ValidatedType]):
     @abstractmethod
     def always_validate_input_format() -> bool:
         """
-        Indicate if this object will always accept input even if post-processing
-        finds it's not valid.
-        It's used to check if syntax is accepted as the "wanted" syntax by user, even if parameters contain errors.
+        If it's not possible to determine if user wanted to fill this parameter (rather than
+        another one in another syntax), return True.
         """
         pass
 

@@ -28,9 +28,17 @@ class CommandSyntax:
         # TODO devrait être ailleurs, mais sert pour le tri...
         if self._always_validate_input_format is None:
             for param in self.params:
-                if not ParamExecutorFactory.get_executor_class(param.param_type).always_validate_input_format():
+
+                if ParamExecutorFactory.get_executor_class(param.param_type).always_validate_input_format():
+                    # if executor always validate, check if param has config that can invalidate
+                    for config in param.configs:
+                        if config.is_input_validator():
+                            self._always_validate_input_format = False
+                            return False
+                else:
                     self._always_validate_input_format = False
                     return False
+
             self._always_validate_input_format = True
 
         return self._always_validate_input_format

@@ -10,7 +10,6 @@ class ParamType(Enum):
     FIXED_VALUE = 3
     INT = 4
     TEXT = 5
-    LIST = 6
 
 
 SupportedType = TypeVar('SupportedType')
@@ -26,6 +25,13 @@ class ParamConfig(ABC, Generic[SupportedType]):
         # the good type, but SyntaxValidator.validate_syntaxes() should be enough.
 
         return self._validate(value)
+
+    @staticmethod
+    @abstractmethod
+    def is_input_validator() -> bool:
+        """Return True if this config can invalidate input,
+        so we can jump to next syntax if config doesn't validate."""
+        pass
 
     @abstractmethod
     def get_definition(self) -> str:
@@ -49,6 +55,10 @@ class NumberMinMaxParamConfig(ParamConfig[Union[int, float]]):
 
         if self.min_value is None and self.max_value is None:
             raise ValueError("One of both parameters must be set!")
+
+    @staticmethod
+    def is_input_validator() -> bool:
+        return False
 
     def get_definition(self) -> str:
         if self.min_value is not None and self.max_value is not None:
@@ -78,6 +88,10 @@ class TextMinMaxParamConfig(ParamConfig[str]):
         if self.min_length is None and self.max_length is None:
             raise ValueError("One of both parameters must be set!")
 
+    @staticmethod
+    def is_input_validator() -> bool:
+        return False
+
     def get_definition(self) -> str:
         if self.min_length is not None and self.max_length is not None:
             return f"entre {self.min_length} et {self.max_length} caractères"
@@ -90,9 +104,9 @@ class TextMinMaxParamConfig(ParamConfig[str]):
     def _validate(self, value: SupportedType) -> bool:
         value_len = len(value)
 
-        if self.min_length is not None and self.min_length > value_len:
+        if self.min_length is not None and value_len < self.min_length:
             return False
-        if self.max_length is not None and self.max_length < value_len:
+        if self.max_length is not None and value_len > self.max_length:
             return False
 
         return True
@@ -104,8 +118,12 @@ class ListParamConfig(ParamConfig[str]):
         super().__init__()
         self.values = values
 
+    @staticmethod
+    def is_input_validator() -> bool:
+        return True
+
     def get_definition(self) -> str:
-        return "valeurs possibles : " + ", ".join(self.values)
+        return "valeurs possibles : [{}]".format(", ".join(self.values))
 
     def _validate(self, value: SupportedType) -> bool:
         return value in self.values
@@ -118,12 +136,3 @@ class CommandParam:
         self.description = description
         self.param_type = param_type
         self.configs = configs
-
-
-class ListCommandParam(CommandParam):
-
-    def __init__(self, name: str, description: str, values: List[str], *configs: ParamConfig):
-        super().__init__(name, description, ParamType.LIST, *configs)
-        self.values = values
-        # TODO archi : message en doublon avec l'executor, alors qu'avec la config on a tout dedans
-        self.description += " (valeurs possibles : %s)" % ", ".join(values)
