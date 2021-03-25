@@ -62,7 +62,7 @@ class NumberMinMaxParamConfig(ParamConfig[Union[int, float]]):
 
     def get_definition(self) -> str:
         if self.min_value is not None and self.max_value is not None:
-            return f"entre {self.min_value} et {self.max_value} inclus"
+            return f"de {self.min_value} à {self.max_value}"
         elif self.min_value is not None:
             return f"minimum {self.min_value}"
         elif self.max_value is not None:

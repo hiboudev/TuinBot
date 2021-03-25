@@ -6,8 +6,8 @@ from application.database.db_memo import DbMemo
 from application.message.messages import AppMessages
 from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
-from core.executor.executors import TextParamExecutor, FixedValueParamExecutor
-from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig
+from core.executor.executors import TextParamExecutor, FixedValueParamExecutor, IntParamExecutor
+from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig, NumberMinMaxParamConfig
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
 
@@ -45,7 +45,12 @@ class MemoCommand(BaseCommand):
                           ),
             CommandSyntax("Liste tes mémos",
                           cls._get_memo_list,
-                          ApplicationParams.INFO
+                          ApplicationParams.LIST
+                          ),
+            CommandSyntax("Lis un mémo via son numéro",
+                          cls._get_memo_by_position,
+                          CommandParam("numéro", "Le numéro du mémo affiché dans la liste", ParamType.INT,
+                                       NumberMinMaxParamConfig(1, cls._MAX_PER_USER))
                           ),
             CommandSyntax("Édite un mémo",
                           cls._edit_memo,
@@ -97,7 +102,19 @@ class MemoCommand(BaseCommand):
                        AppMessages.get_memo_embed(memo.name, memo.content),
                        20)
         else:
-            cls._display_error(message, "Aucun mémo trouvé contenant le terme `{}`.".format(name_executor.get_text()))
+            cls._display_error(message, "Aucun nom de mémo avec le terme `{}`.".format(
+                name_executor.get_text()))
+
+    @classmethod
+    def _get_memo_by_position(cls, message: Message, int_executor: IntParamExecutor):
+        memo = DbMemo.get_memo_by_position(message.author.id, int_executor.get_int())
+        if memo:
+            cls._reply(message,
+                       AppMessages.get_memo_embed(memo.name, memo.content),
+                       20)
+        else:
+            cls._display_error(message, "Aucun mémo avec le numéro `{}`.".format(
+                int_executor.get_int()))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -115,11 +132,18 @@ class MemoCommand(BaseCommand):
         if not memos:
             cls._reply(message, "Tu n'as aucun mémo enregistré.")
         else:
-            # Replace spaces with unbreakable so note titles containing space are not wrapped.
-            memos = ["`" + memo.replace(" ", "\u00A0") + "`" for memo in memos]
+            # Replace spaces with unbreakable so memo titles containing space are not wrapped.
+            # memos = ["`" + memo.replace(" ", "\u00A0") + "`" for memo in memos]
+            memo_list_str = []
+            for memo in memos:
+                memo_list_str.append("{}: `{}`".format(memo.position,
+                                                       memo.name.replace(" ", "\u00A0")
+                                                       )
+                                     )
+
             cls._reply(message,
                        AppMessages.get_memo_embed("Mes mémos",
-                                                  "\u00A0\u0020\u00A0".join(memos),
+                                                  "\u00A0\u0020\u00A0".join(memo_list_str),
                                                   "{} / {}".format(len(memos), cls._MAX_PER_USER)
                                                   ),
                        20

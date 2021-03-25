@@ -10,6 +10,12 @@ class Memo:
     content: str
 
 
+@dataclass
+class MemoListItem:
+    name: str
+    position: int
+
+
 class DbMemo:
 
     @staticmethod
@@ -48,6 +54,27 @@ class DbMemo:
             return None if not result else Memo(result[0], result[1])
 
     @staticmethod
+    def get_memo_by_position(author_id: int, position: int) -> Union[Memo, None]:
+        with DatabaseConnection() as cursor:
+            # cursor.execute("SET @row_number = 0;")
+            cursor.execute("""
+                                SELECT
+                                    name,
+                                    content
+                                FROM
+                                    memo
+                                WHERE
+                                    author_id = %(author_id)s
+                                ORDER BY
+                                    name
+                                LIMIT %(position)s, 1
+                                """,
+                           {"author_id": author_id, "position": position - 1})
+
+            result = cursor.fetchone()
+            return None if not result else Memo(result[0], result[1])
+
+    @staticmethod
     def remove_memo(author_id: int, name: str) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
@@ -63,11 +90,13 @@ class DbMemo:
             return cursor.rowcount > 0
 
     @staticmethod
-    def get_memo_list(author_id: int) -> List[str]:
+    def get_memo_list(author_id: int) -> List[MemoListItem]:
         with DatabaseConnection() as cursor:
+            cursor.execute("SET @row_number = 0;")
             cursor.execute("""
                                 SELECT
-                                    name
+                                    name,
+                                    (@row_number:=@row_number + 1) AS num
                                 FROM
                                     memo
                                 WHERE
@@ -77,7 +106,7 @@ class DbMemo:
                                 """,
                            {"author_id": author_id})
 
-            return [i[0] for i in cursor.fetchall()]
+            return [MemoListItem(i[0], i[1]) for i in cursor.fetchall()]
 
     @staticmethod
     def edit_memo(author_id: int, name: str, content: str) -> bool:
