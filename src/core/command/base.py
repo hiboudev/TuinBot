@@ -39,6 +39,9 @@ class BaseCommand(Command, ABC):
         """
         all_executors: Dict[int, Dict[str]] = {}
 
+        last_syntax = None
+        last_executor = None
+
         for syntax in syntaxes:
             if len(command_params) != len(syntax.params):
                 continue
@@ -61,17 +64,17 @@ class BaseCommand(Command, ABC):
 
                 syntax_executors.append(executor)
 
-                if not executor.always_validate_input_format():
-                    if not executor.is_input_format_valid():
-                        syntax_is_valid = False
-                        break
-                    elif executor.get_result_type() == ParamResultType.INVALID:
-                        cls._display_error(message, executor.get_error())
-                        return
-                else:
-                    if executor.get_result_type() == ParamResultType.INVALID:
-                        cls._display_error(message, executor.get_error())
-                        return
+                # if not executor.always_validate_input_format():
+                if not executor.is_input_format_valid():
+                    syntax_is_valid = False
+                    break
+                elif executor.get_result_type() == ParamResultType.INVALID:
+                    cls._display_error(message, executor.get_error())
+                    return
+                # else:
+                #     if executor.get_result_type() == ParamResultType.INVALID:
+                #         cls._display_error(message, executor.get_error())
+                #         return
 
                 param_index += 1
 
@@ -79,12 +82,16 @@ class BaseCommand(Command, ABC):
                 syntax.callback(message, *syntax_executors)  # [:len(syntax.params)])
                 return
 
-        if not syntax_is_valid and executor:
-            # TODO voir comment afficher l'erreur, quand aucun param n'a validé l'entrée
-            print("last executor ran:", executor.param.name)
+            last_syntax = syntax
+            last_executor = executor
 
-        # No valid syntax nor giving error, can we reach this?
-        cls._display_error(message, """Tu as dû faire une petite erreur quelque part.""")
+        if last_syntax and last_executor and last_executor.get_error():
+            cls._display_error(message, last_executor.get_error())
+            return
+
+        cls._display_error(message, """Oups, tu as dû faire une petite erreur quelque part.""")
+
+        # cls._display_error(message, """Oups, il semble que quelque chose ne tourne pas rond...""")
 
     @classmethod
     def get_syntaxes(cls) -> List[CommandSyntax]:
