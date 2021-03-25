@@ -6,15 +6,20 @@ from application.database.db_connexion import DatabaseConnection
 class DbAutoSpoiler:
 
     @staticmethod
-    def add_auto_spoiler(guild_id: int, author_id: int, target_id: int) -> bool:
+    def add_auto_spoiler(guild_id: int, channel_id: int, author_id: int, target_id: int) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                             INSERT IGNORE INTO
-                                auto_spoiler (guild_id, author_id, target_id)
-                            VALUES
-                                (%(guild_id)s, %(author_id)s, %(target_id)s)
+                                auto_spoiler (guild_id, channel_id, author_id, target_id)
+                            VALUES (
+                                %(guild_id)s,
+                                %(channel_id)s,
+                                %(author_id)s,
+                                %(target_id)s
+                            )
                            """,
-                           {"guild_id": guild_id, "author_id": author_id, "target_id": target_id})
+                           {"guild_id": guild_id, "channel_id": channel_id, "author_id": author_id,
+                            "target_id": target_id})
 
             return cursor.rowcount > 0
 
@@ -55,7 +60,7 @@ class DbAutoSpoiler:
             return None if not result else result[0]
 
     @classmethod
-    def use_auto_spoiler(cls, guild_id: int, target_id: int) -> Union[int, None]:
+    def use_auto_spoiler(cls, guild_id: int, channel_id: int, target_id: int) -> Union[int, None]:
         """Delete the spoiler from database."""
 
         author_id = cls.get_auto_spoiler_author(guild_id, target_id)
@@ -68,7 +73,9 @@ class DbAutoSpoiler:
                                     guild_id=%(guild_id)s
                                 AND
                                     target_id = %(user_id)s
+                                AND
+                                    channel_id = %(channel_id)s
                                 """,
-                           {"guild_id": guild_id, "user_id": target_id})
+                           {"guild_id": guild_id, "channel_id": channel_id, "user_id": target_id})
 
-            return author_id
+            return author_id if cursor.rowcount > 0 else None

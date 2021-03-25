@@ -24,7 +24,9 @@ class AutoSpoilerCommand(BaseCommand):
 
     @classmethod
     def description_details(cls) -> [str, None]:
-        return """Un tuin peut avoir au maximum 1 spoiler planifié sur lui."""
+        return ("Le spoiler s'activera uniquement dans le salon où la commande a été tapée."
+                " Un tuin peut avoir au maximum 1 spoiler planifié sur lui."
+                )
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
@@ -51,6 +53,7 @@ class AutoSpoilerCommand(BaseCommand):
     @classmethod
     def _add_spoiler(cls, message: Message, user_executor: UserParamExecutor):
         if DbAutoSpoiler.add_auto_spoiler(message.guild.id,
+                                          message.channel.id,
                                           message.author.id,
                                           user_executor.get_user().id
                                           ):
@@ -104,6 +107,7 @@ class AutoSpoilerCommand(BaseCommand):
             return
 
         spoil_author_id = DbAutoSpoiler.use_auto_spoiler(message.guild.id,
+                                                         message.channel.id,
                                                          message.author.id)
 
         if spoil_author_id:
