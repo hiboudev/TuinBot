@@ -7,7 +7,7 @@ from application.message.messages import AppMessages
 from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.executor.executors import TextParamExecutor, FixedValueParamExecutor
-from core.param.params import CommandParam, ParamType
+from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
 
@@ -29,7 +29,7 @@ class MemoCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
-        name_param = CommandParam("nom", "Nom du mémo", ParamType.TEXT)
+        name_param = CommandParam("nom", "Nom du mémo", ParamType.TEXT, TextMinMaxParamConfig(3))
         name_part_param = CommandParam("nom", "Une partie du nom du mémo", ParamType.TEXT)
         edit_param = CommandParam("edit", "", ParamType.FIXED_VALUE)
 
