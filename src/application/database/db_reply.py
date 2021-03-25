@@ -13,17 +13,24 @@ class AutoReply:
 class DbAutoReply:
 
     @staticmethod
-    def add_auto_reply(guild_id: int, author_id: int, target_id: int, message: str) -> bool:
+    def add_auto_reply(guild_id: int, channel_id: int, author_id: int, target_id: int, message: str) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                             INSERT IGNORE INTO
-                                auto_reply (guild_id, author_id, target_id, message)
-                            VALUES
-                                (%(guild_id)s, %(author_id)s, %(target_id)s, %(message)s)
+                                auto_reply (guild_id, channel_id, author_id, target_id, message)
+                            VALUES (
+                                %(guild_id)s,
+                                %(channel_id)s,
+                                %(author_id)s,
+                                %(target_id)s,
+                                %(message)s
+                            )
                             ON DUPLICATE KEY UPDATE
+                                channel_id = %(channel_id)s,
                                 message = %(message)s
                            """,
-                           {"guild_id": guild_id, "author_id": author_id, "target_id": target_id, "message": message})
+                           {"guild_id": guild_id, "channel_id": channel_id, "author_id": author_id,
+                            "target_id": target_id, "message": message})
 
             return cursor.rowcount > 0
 
@@ -91,7 +98,7 @@ class DbAutoReply:
             return None if not result else result[0]
 
     @classmethod
-    def use_auto_replys(cls, guild_id: int, target_id: int) -> List[AutoReply]:
+    def use_auto_replys(cls, guild_id: int, channel_id: int, target_id: int) -> List[AutoReply]:
         """Delete the spoiler from database."""
 
         with DatabaseConnection() as cursor:
@@ -103,9 +110,11 @@ class DbAutoReply:
                                 WHERE
                                     guild_id=%(guild_id)s
                                 AND
+                                    channel_id=%(channel_id)s
+                                AND
                                     target_id = %(target_id)s
                                 """,
-                           {"guild_id": guild_id, "target_id": target_id})
+                           {"guild_id": guild_id, "channel_id": channel_id, "target_id": target_id})
 
             messages = [AutoReply(i[0], i[1]) for i in cursor.fetchall()]
 
@@ -115,8 +124,10 @@ class DbAutoReply:
                                 WHERE
                                     guild_id=%(guild_id)s
                                 AND
+                                    channel_id=%(channel_id)s
+                                AND
                                     target_id = %(target_id)s
                                 """,
-                           {"guild_id": guild_id, "target_id": target_id})
+                           {"guild_id": guild_id, "channel_id": channel_id, "target_id": target_id})
 
             return messages

@@ -24,7 +24,8 @@ class ReplyMessageCommand(BaseCommand):
 
     @classmethod
     def description_details(cls) -> [str, None]:
-        return ("Tu peux laisser 1 message par tuin,"
+        return ("Le message n'apparaîtra que dans le salon où la commande a été tapée."
+                " Tu peux laisser 1 message par tuin,"
                 " et un tuin peut avoir au maximum {} message(s) planifié(s) sur lui."
                 ).format(cls._MAX_PER_USER)
 
@@ -63,6 +64,7 @@ class ReplyMessageCommand(BaseCommand):
 
         elif cls._execute_db_bool_request(lambda:
                                           DbAutoReply.add_auto_reply(message.guild.id,
+                                                                     message.channel.id,
                                                                      message.author.id,
                                                                      user_executor.get_user().id,
                                                                      text_executor.get_text()
@@ -109,7 +111,7 @@ class ReplyMessageCommand(BaseCommand):
 
     @classmethod
     def execute_message_hook(cls, message: Message):
-        messages = DbAutoReply.use_auto_replys(message.guild.id, message.author.id)
+        messages = DbAutoReply.use_auto_replys(message.guild.id, message.channel.id, message.author.id)
 
         if messages:
             cls._async(cls._execute_hook_async(message, messages))
