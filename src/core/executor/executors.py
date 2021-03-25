@@ -3,7 +3,7 @@ from typing import Union, Optional
 from discord import Message, TextChannel, User, Client
 
 from core.executor.base import CommandParamExecutor, ValidatedType
-from core.param.params import CommandParam
+from core.param.params import CommandParam, ListCommandParam
 from core.utils.parsing_utils import ParsingUtils
 
 
@@ -29,7 +29,7 @@ class UserParamExecutor(CommandParamExecutor[str]):
         if self._user:
             return True
         else:
-            return self._set_error("Utilisateur introuvable.")
+            return self._set_error("Utilisateur introuvable")
 
     def get_user(self) -> Union[User, None]:
         return self._user
@@ -54,7 +54,7 @@ class EmojiParamExecutor(CommandParamExecutor[str]):
         if self._emoji:
             return True
         else:
-            return self._set_error("Emoji invalide.")
+            return self._set_error("Emoji invalide")
 
     def get_emoji(self) -> Union[str, None]:
         return self._emoji
@@ -69,13 +69,14 @@ class FixedValueParamExecutor(CommandParamExecutor[str]):
     def _validate_input_format(self, value: str) -> Optional[ValidatedType]:
         if value == self.param.name:
             return value
+        self._set_error("Valeur invalide")
         return None
 
     def _process_param(self, validated_value: ValidatedType, message: Message, client: Client) -> bool:
         if validated_value == self.param.name:
             return True
         else:
-            return self._set_error("Valeur invalide.")
+            return self._set_error("Valeur invalide")
 
 
 class IntParamExecutor(CommandParamExecutor[int]):
@@ -93,6 +94,7 @@ class IntParamExecutor(CommandParamExecutor[int]):
             self._int_value = int(value)
             return self._int_value
         except ValueError:
+            self._set_error("La valeur n'est pas un chiffre entier")
             return None
 
     def _process_param(self, validated_value: ValidatedType, message: Message, client: Client) -> bool:
@@ -121,3 +123,27 @@ class TextParamExecutor(CommandParamExecutor[str]):
 
     def get_text(self) -> str:
         return self._text
+
+
+class ListParamExecutor(CommandParamExecutor[str]):
+
+    def __init__(self, param: CommandParam):
+        super().__init__(param)
+
+    @staticmethod
+    def always_validate_input_format() -> bool:
+        return False
+
+    def _validate_input_format(self, value: str) -> Optional[ValidatedType]:
+        # TODO comment éviter de devoir checker le type ?
+        if not isinstance(self.param, ListCommandParam):
+            raise TypeError("Param should be of type ListCommandParam!")
+
+        if value in self.param.values:
+            return value
+
+        self._set_error("valeurs possibles : {}".format(", ".join(self.param.values)))
+        return None
+
+    def _process_param(self, validated_value: ValidatedType, message: Message, client: Client) -> bool:
+        return self.is_input_format_valid()

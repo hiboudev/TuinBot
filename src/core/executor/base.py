@@ -34,7 +34,7 @@ class CommandParamExecutor(Generic[ValidatedType]):
 
         for config in self.param.configs:
             if not config.validate(validated_value):
-                self._set_error(f"**{self.param.name}** invalide : `{config.get_definition()}`.")
+                self._set_error(config.get_definition())
                 return
 
         if self._process_param(validated_value, message, client):
@@ -65,7 +65,7 @@ class CommandParamExecutor(Generic[ValidatedType]):
         return self.__result_type
 
     def get_error(self) -> str:
-        return self.__error
+        return f"**{self.param.name}** invalide : `{self.__error}`."
 
     def _set_error(self, error: str) -> bool:
         self.__error = error
