@@ -88,7 +88,7 @@ class MemoCommand(BaseCommand):
             return
 
         name = name_executor.get_text().replace("`", "")
-        content = "\u2022 " + content_executor.get_text()
+        content = "`1`\u00A0\u00A0\u00A0" + content_executor.get_text()
 
         if DbMemo.add_memo(message.author.id, name, ParsingUtils.format_links(content)):
             cls._reply(message, "Mémo [**{}**] ajouté !".format(name))
@@ -111,12 +111,13 @@ class MemoCommand(BaseCommand):
                 name_executor.get_text(), cls._MAX_LINES))
             return
 
-        add_content = "\n\u2022 " + content_executor.get_text()
+        add_content = f"\n`{line_count + 1}`\u00A0\u00A0\u00A0" + content_executor.get_text()
 
-        if DbMemo.edit_memo(message.author.id, name_executor.get_text(), add_content):
+        if cls._execute_db_bool_request(lambda: DbMemo.edit_memo(message.author.id,
+                                                                 name_executor.get_text(),
+                                                                 add_content),
+                                        message):
             cls._reply(message, "Mémo [**{}**] édité !".format(name_executor.get_text()))
-        else:
-            cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
 
     @classmethod
     def _get_memo(cls, message: Message, name_executor: TextParamExecutor):
