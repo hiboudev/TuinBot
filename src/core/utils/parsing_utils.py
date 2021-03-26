@@ -128,6 +128,13 @@ class ParsingUtils:
     def is_unique_link(cls, text: str) -> bool:
         return cls._link_reg_ex.fullmatch(text) is not None
 
+    @staticmethod
+    def count_lines(text: str) -> int:
+        if not text:
+            return 0
+
+        return text.count("\n") + 1
+
 
 class UserSearchResult:
 

@@ -14,6 +14,7 @@ from core.utils.parsing_utils import ParsingUtils
 
 class MemoCommand(BaseCommand):
     _MAX_PER_USER = 20
+    _MAX_LINES = 10
 
     @staticmethod
     def name() -> str:
@@ -29,14 +30,18 @@ class MemoCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
-        name_param = CommandParam("nom", "Nom du mémo", ParamType.TEXT, TextMinMaxParamConfig(3))
+        name_param_creation = CommandParam("nom", "Nom du mémo", ParamType.TEXT, TextMinMaxParamConfig(3))
+        # No need to limite to 3 chars when we retrieve a memo => makes help page lighter.
+        name_param_use = CommandParam("nom", "Nom du mémo", ParamType.TEXT)
         name_part_param = CommandParam("nom", "Une partie du nom du mémo", ParamType.TEXT)
         edit_param = CommandParam("edit", "", ParamType.FIXED_VALUE)
+        memo_number_param = CommandParam("numéro", "Le numéro du mémo affiché dans la liste", ParamType.INT,
+                                         NumberMinMaxParamConfig(1, cls._MAX_PER_USER))
 
         syntaxes = [
             CommandSyntax("Ajoute un mémo",
                           cls._add_memo,
-                          name_param,
+                          name_param_creation,
                           ApplicationParams.SENTENCE
                           ),
             CommandSyntax("Lis un mémo",
@@ -49,18 +54,17 @@ class MemoCommand(BaseCommand):
                           ),
             CommandSyntax("Lis un mémo via son numéro",
                           cls._get_memo_by_position,
-                          CommandParam("numéro", "Le numéro du mémo affiché dans la liste", ParamType.INT,
-                                       NumberMinMaxParamConfig(1, cls._MAX_PER_USER))
+                          memo_number_param
                           ),
-            CommandSyntax("Édite un mémo",
+            CommandSyntax("Ajoute une ligne à un mémo",
                           cls._edit_memo,
-                          name_param,
+                          name_param_use,
                           edit_param,
                           ApplicationParams.SENTENCE
                           ),
             CommandSyntax("Supprime un mémo",
                           cls._remove_memo,
-                          name_param,
+                          name_param_use,
                           ApplicationParams.STOP
                           )
         ]
@@ -79,8 +83,9 @@ class MemoCommand(BaseCommand):
             return
 
         name = name_executor.get_text().replace("`", "")
+        content = "\u2022 " + content_executor.get_text()
 
-        if DbMemo.add_memo(message.author.id, name, ParsingUtils.format_links(content_executor.get_text())):
+        if DbMemo.add_memo(message.author.id, name, ParsingUtils.format_links(content)):
             cls._reply(message, "Mémo [**{}**] ajouté !".format(name))
         else:
             cls._display_error(message, "Le mémo [**{}**] existe déjà, veux-tu l'éditer ?".format(name))
@@ -89,7 +94,21 @@ class MemoCommand(BaseCommand):
     @classmethod
     def _edit_memo(cls, message: Message, name_executor: TextParamExecutor, edit_executor: FixedValueParamExecutor,
                    content_executor: TextParamExecutor):
-        if DbMemo.edit_memo(message.author.id, name_executor.get_text(), content_executor.get_text()):
+
+        memo = DbMemo.get_memo(message.author.id, name_executor.get_text())
+        if not memo:
+            cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
+            return
+
+        line_count = ParsingUtils.count_lines(memo.content)
+        if line_count >= cls._MAX_LINES:
+            cls._display_error(message, "Le mémo [**{}**] fait déjà {} lignes, tu ne peux plus rien rajouter.".format(
+                name_executor.get_text(), cls._MAX_LINES))
+            return
+
+        add_content = "\n\u2022 " + content_executor.get_text()
+
+        if DbMemo.edit_memo(message.author.id, name_executor.get_text(), add_content):
             cls._reply(message, "Mémo [**{}**] édité !".format(name_executor.get_text()))
         else:
             cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))

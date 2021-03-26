@@ -108,20 +108,37 @@ class DbMemo:
 
             return [MemoListItem(i[0], i[1]) for i in cursor.fetchall()]
 
+    # @staticmethod
+    # def replace_memo(author_id: int, name: str, content: str) -> bool:
+    #     with DatabaseConnection() as cursor:
+    #         cursor.execute("""
+    #                             UPDATE
+    #                                 memo
+    #                             SET
+    #                                 content =  %(content)s
+    #                             WHERE
+    #                                 author_id = %(author_id)s
+    #                             AND
+    #                                 name = %(name)s
+    #                             """,
+    #                        {"author_id": author_id, "name": name, "content": content})
+    #
+    #         return cursor.rowcount > 0
+
     @staticmethod
-    def edit_memo(author_id: int, name: str, content: str) -> bool:
+    def edit_memo(author_id: int, name: str, add_content: str) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                                 UPDATE
                                     memo
                                 SET
-                                    content =  %(content)s
+                                    content =  CONCAT(content, %(add_content)s)
                                 WHERE
                                     author_id = %(author_id)s
                                 AND
                                     name = %(name)s
                                 """,
-                           {"author_id": author_id, "name": name, "content": content})
+                           {"author_id": author_id, "name": name, "add_content": add_content})
 
             return cursor.rowcount > 0
 
