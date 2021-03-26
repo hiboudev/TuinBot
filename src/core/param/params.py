@@ -66,7 +66,7 @@ class NumberMinMaxParamConfig(ParamConfig[Union[int, float]]):
         elif self.min_value is not None:
             return f"minimum {self.min_value}"
         elif self.max_value is not None:
-            return f"maximum {self.min_value}"
+            return f"maximum {self.max_value}"
         return ""
 
     def _validate(self, value: SupportedType) -> bool:
@@ -98,7 +98,7 @@ class TextMinMaxParamConfig(ParamConfig[str]):
         elif self.min_length is not None:
             return f"minimum {self.min_length} caractères"
         elif self.max_length is not None:
-            return f"maximum {self.min_length} caractères"
+            return f"maximum {self.max_length} caractères"
         return ""
 
     def _validate(self, value: SupportedType) -> bool:
