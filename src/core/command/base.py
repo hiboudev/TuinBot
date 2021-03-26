@@ -144,14 +144,16 @@ class BaseCommand(Command, ABC):
         cls._async(cls._reply_and_delete(message, content, delete_delay))
 
     @classmethod
-    async def _reply_and_delete(cls, message: Message, content: Union[Embed, str], delay: int = None):
+    async def _reply_and_delete(cls, message: Message, content: Union[Embed, str], delete_delay: int = None):
+        """delay : use negative value to avoid deletion"""
         if isinstance(content, Embed):
             response = await message.reply(embed=content)
         else:
             response = await message.reply(content=content)
 
-        await response.delete(delay=delay or cls._delete_delay)
-        await message.delete(delay=delay or cls._delete_delay)
+        if delete_delay is None or delete_delay >= 0:
+            await response.delete(delay=delete_delay if delete_delay is not None else cls._delete_delay)
+            await message.delete(delay=delete_delay if delete_delay is not None else cls._delete_delay)
 
     @staticmethod
     def _async(coro: Coroutine):

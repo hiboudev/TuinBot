@@ -165,7 +165,7 @@ class MemoCommand(BaseCommand):
                                                                               line_count))
             return
 
-        cls._reply(message, AppMessages.get_memo_line_embed(line))
+        cls._reply(message, AppMessages.get_memo_line_embed(line), -1)
 
     # @classmethod
     # def _get_memo_by_position(cls, message: Message, int_executor: IntParamExecutor):
