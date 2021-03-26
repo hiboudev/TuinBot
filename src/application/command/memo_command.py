@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 from discord import Message
@@ -155,7 +156,8 @@ class MemoCommand(BaseCommand):
         line_position = int_executor.get_int()
         line_count = ParsingUtils.count_lines(memo.content)
         # remove bullet and space at begin of line
-        line = ParsingUtils.get_line(memo.content, line_position - 1)[2:]
+        line = ParsingUtils.get_line(memo.content, line_position - 1)
+        line = re.sub(r"^`\d+`\s+", "", line)
 
         if not line:
             cls._display_error(message,
