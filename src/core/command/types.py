@@ -49,11 +49,16 @@ class Command(ABC):
         return False
 
     @staticmethod
+    def hook_can_delete_message() -> bool:
+        return False
+
+    @staticmethod
     def hook_type() -> HookType:
         return HookType.NONE
 
     @classmethod
-    def execute_message_hook(cls, message: Message):
+    def execute_message_hook(cls, message: Message) -> bool:
+        """Return True if hook deleted user message. hook_can_delete_message() must also return True."""
         pass
 
     @classmethod
