@@ -10,6 +10,7 @@ from core.command.types import HookType
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
 from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig
 from core.param.syntax import CommandSyntax
+from core.utils.parsing_utils import ParsingUtils
 
 
 class ReplyMessageCommand(BaseCommand):
@@ -68,12 +69,14 @@ class ReplyMessageCommand(BaseCommand):
             )
             return
 
+        content = ParsingUtils.to_single_line(text_executor.get_text())
+
         if cls._execute_db_bool_request(lambda:
                                         DbAutoReply.add_auto_reply(message.guild.id,
                                                                    message.channel.id,
                                                                    message.author.id,
                                                                    user_executor.get_user().id,
-                                                                   text_executor.get_text()
+                                                                   content
                                                                    ),
                                         message):
             cls._reply(message,
