@@ -8,13 +8,16 @@ from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
+from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig
 from core.param.syntax import CommandSyntax
+from core.utils.parsing_utils import ParsingUtils
 
 
 class TypingMessageCommand(BaseCommand):
     # TODO commande très semblable à reply, généraliser ?
 
     _MAX_PER_USER = 1
+    _MAX_CHARS = 300
 
     @staticmethod
     def name() -> str:
@@ -37,7 +40,10 @@ class TypingMessageCommand(BaseCommand):
             CommandSyntax("Enregistre un message",
                           cls._add_typing_message,
                           ApplicationParams.USER,
-                          ApplicationParams.SENTENCE
+                          CommandParam(ApplicationParams.SENTENCE.name,
+                                       ApplicationParams.SENTENCE.description,
+                                       ParamType.TEXT,
+                                       TextMinMaxParamConfig(max_length=cls._MAX_CHARS))
                           ),
             CommandSyntax("Retire ton message",
                           cls._remove_typing_message,
@@ -64,15 +70,18 @@ class TypingMessageCommand(BaseCommand):
                 "Oups, il y a déjà {} message(s) enregistré(s) pour **{}**, il va falloir attendre ton tour !".format(
                     typing_count, user_executor.get_user().display_name)
             )
+            return
 
-        elif cls._execute_db_bool_request(lambda:
-                                          DbTypingMessage.add_typing_message(message.guild.id,
-                                                                             message.channel.id,
-                                                                             message.author.id,
-                                                                             user_executor.get_user().id,
-                                                                             text_executor.get_text()
-                                                                             ),
-                                          message):
+        content = ParsingUtils.to_single_line(text_executor.get_text())
+
+        if cls._execute_db_bool_request(lambda:
+                                        DbTypingMessage.add_typing_message(message.guild.id,
+                                                                           message.channel.id,
+                                                                           message.author.id,
+                                                                           user_executor.get_user().id,
+                                                                           content
+                                                                           ),
+                                        message):
             cls._reply(message,
                        "Message enregistré pour **%s** !" % user_executor.get_user().display_name)
 

@@ -4,6 +4,7 @@ from application.command.memo_command import MemoCommand
 from application.command.reac_command import AutoReactionCommand
 from application.command.reply_command import ReplyMessageCommand
 from application.command.spoil_command import AutoSpoilerCommand
+from application.command.test_command import TestCommand
 from application.command.tuin_command import TuinBotCommand
 from application.command.typing_mess_command import TypingMessageCommand
 from core.client.bot import DiscordBot
@@ -17,7 +18,8 @@ CommandRepository.set_command_list(TuinBotCommand,
                                    AutoSpoilerCommand,
                                    TypingMessageCommand,
                                    ReplyMessageCommand,
-                                   MemoCommand)
+                                   MemoCommand,
+                                   TestCommand)
 
 intents = Intents.default()
 intents.members = True
