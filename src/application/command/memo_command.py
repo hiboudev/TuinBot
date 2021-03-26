@@ -54,11 +54,11 @@ class MemoCommand(BaseCommand):
                           cls._get_memo_list,
                           ApplicationParams.LIST
                           ),
-            CommandSyntax("Lis un mémo via son numéro",
-                          cls._get_memo_by_position,
-                          CommandParam("numéro", "Le numéro du mémo affiché dans la liste", ParamType.INT,
-                                       NumberMinMaxParamConfig(1, cls._MAX_PER_USER))
-                          ),
+            # CommandSyntax("Lis un mémo via son numéro",
+            #               cls._get_memo_by_position,
+            #               CommandParam("numéro", "Le numéro du mémo affiché dans la liste", ParamType.INT,
+            #                            NumberMinMaxParamConfig(1, cls._MAX_PER_USER))
+            #               ),
             CommandSyntax("Ajoute une ligne à un mémo",
                           cls._edit_memo,
                           name_param_use,
@@ -167,16 +167,16 @@ class MemoCommand(BaseCommand):
 
         cls._reply(message, AppMessages.get_memo_line_embed(line))
 
-    @classmethod
-    def _get_memo_by_position(cls, message: Message, int_executor: IntParamExecutor):
-        memo = DbMemo.get_memo_by_position(message.author.id, int_executor.get_int())
-        if memo:
-            cls._reply(message,
-                       AppMessages.get_memo_embed(memo.name, memo.content),
-                       20)
-        else:
-            cls._display_error(message, "Aucun mémo avec le numéro `{}`.".format(
-                int_executor.get_int()))
+    # @classmethod
+    # def _get_memo_by_position(cls, message: Message, int_executor: IntParamExecutor):
+    #     memo = DbMemo.get_memo_by_position(message.author.id, int_executor.get_int())
+    #     if memo:
+    #         cls._reply(message,
+    #                    AppMessages.get_memo_embed(memo.name, memo.content),
+    #                    20)
+    #     else:
+    #         cls._display_error(message, "Aucun mémo avec le numéro `{}`.".format(
+    #             int_executor.get_int()))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -198,10 +198,12 @@ class MemoCommand(BaseCommand):
             # memos = ["`" + memo.replace(" ", "\u00A0") + "`" for memo in memos]
             memo_list_str = []
             for memo in memos:
-                memo_list_str.append("{}: `{}`".format(memo.position,
-                                                       memo.name.replace(" ", "\u00A0")
-                                                       )
-                                     )
+                # With memo number
+                # memo_list_str.append("{}: `{}`".format(memo.position,
+                #                                        memo.name.replace(" ", "\u00A0")
+                #                                        )
+                #                      )
+                memo_list_str.append("`{}`".format(memo.name.replace(" ", "\u00A0")))
 
             cls._reply(message,
                        AppMessages.get_memo_embed("Mes mémos",
