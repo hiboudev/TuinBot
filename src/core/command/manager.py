@@ -12,7 +12,7 @@ from core.command.types import HookType
 
 
 class CommandManager:
-    _remove_bound_quotes_reg = re.compile(r"^\"(.*?)\"$")
+    _remove_bound_quotes_reg = re.compile(r"^\"(.*?)\"$", re.DOTALL)
 
     @classmethod
     def manage_message(cls, message: Message, client: Client):
