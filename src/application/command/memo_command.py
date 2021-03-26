@@ -15,6 +15,7 @@ from core.utils.parsing_utils import ParsingUtils
 class MemoCommand(BaseCommand):
     _MAX_PER_USER = 20
     _MAX_LINES = 10
+    _MAX_CHARS = 1000
 
     @staticmethod
     def name() -> str:
@@ -39,7 +40,10 @@ class MemoCommand(BaseCommand):
             CommandSyntax("Ajoute un mémo",
                           cls._add_memo,
                           name_param_creation,
-                          ApplicationParams.SENTENCE
+                          CommandParam(ApplicationParams.SENTENCE.name,
+                                       ApplicationParams.SENTENCE.description,
+                                       ParamType.TEXT,
+                                       TextMinMaxParamConfig(max_length=cls._MAX_CHARS))
                           ),
             CommandSyntax("Lis un mémo",
                           cls._get_memo,
@@ -87,8 +91,8 @@ class MemoCommand(BaseCommand):
                        )
             return
 
-        name = name_executor.get_text().replace("`", "")
-        content = "`1`\u00A0\u00A0\u00A0" + content_executor.get_text()
+        name = ParsingUtils.to_single_line(name_executor.get_text().replace("`", ""))
+        content = "`1`\u00A0\u00A0\u00A0" + ParsingUtils.to_single_line(content_executor.get_text())
 
         if DbMemo.add_memo(message.author.id, name, ParsingUtils.format_links(content)):
             cls._reply(message, "Mémo [**{}**] ajouté !".format(name))
