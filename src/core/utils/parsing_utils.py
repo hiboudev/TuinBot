@@ -71,9 +71,8 @@ class ParsingUtils:
 
                 matches.append(match)
 
-        Utils.multisort(matches, sort_rule)
-
         if matches:
+            Utils.multisort(matches, sort_rule)
             return matches[0].user
 
         return None
@@ -112,6 +111,8 @@ class ParsingUtils:
                     return matches.group("emoji_string")
 
         return None
+
+    # TODO à partir de là ça devrait passer dans le package application
 
     @classmethod
     def extract_links(cls, text: str) -> LinkExtract:

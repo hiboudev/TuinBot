@@ -8,11 +8,13 @@ from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
+from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig
 from core.param.syntax import CommandSyntax
 
 
 class ReplyMessageCommand(BaseCommand):
     _MAX_PER_USER = 2
+    _MAX_CHARS = 300
 
     @staticmethod
     def name() -> str:
@@ -35,7 +37,10 @@ class ReplyMessageCommand(BaseCommand):
             CommandSyntax("Enregistre un message",
                           cls._add_reply,
                           ApplicationParams.USER,
-                          ApplicationParams.SENTENCE
+                          CommandParam(ApplicationParams.SENTENCE.name,
+                                       ApplicationParams.SENTENCE.description,
+                                       ParamType.TEXT,
+                                       TextMinMaxParamConfig(max_length=cls._MAX_CHARS))
                           ),
             CommandSyntax("Retire ton message",
                           cls._remove_reply,
@@ -53,23 +58,24 @@ class ReplyMessageCommand(BaseCommand):
     # noinspection PyUnusedLocal
     @classmethod
     def _add_reply(cls, message: Message, user_executor: UserParamExecutor, text_executor: TextParamExecutor):
-        typing_count = DbAutoReply.count_auto_replys(message.guild.id, user_executor.get_user().id, message.author.id)
+        reply_count = DbAutoReply.count_auto_replys(message.guild.id, user_executor.get_user().id, message.author.id)
 
-        if typing_count >= cls._MAX_PER_USER:
+        if reply_count >= cls._MAX_PER_USER:
             cls._reply(
                 message,
                 "Oups, il y a déjà {} message(s) enregistré(s) pour **{}**, il va falloir attendre ton tour !".format(
-                    typing_count, user_executor.get_user().display_name)
+                    reply_count, user_executor.get_user().display_name)
             )
+            return
 
-        elif cls._execute_db_bool_request(lambda:
-                                          DbAutoReply.add_auto_reply(message.guild.id,
-                                                                     message.channel.id,
-                                                                     message.author.id,
-                                                                     user_executor.get_user().id,
-                                                                     text_executor.get_text()
-                                                                     ),
-                                          message):
+        if cls._execute_db_bool_request(lambda:
+                                        DbAutoReply.add_auto_reply(message.guild.id,
+                                                                   message.channel.id,
+                                                                   message.author.id,
+                                                                   user_executor.get_user().id,
+                                                                   text_executor.get_text()
+                                                                   ),
+                                        message):
             cls._reply(message,
                        "Message enregistré pour **%s** !" % user_executor.get_user().display_name)
 
@@ -120,7 +126,6 @@ class ReplyMessageCommand(BaseCommand):
     async def _execute_hook_async(cls, message: Message, messages: List[AutoReply]):
         for text_message in messages:
             author = message.guild.get_member(text_message.author_id)
-
             embed = AppMessages.get_recorded_message_embed(
                 text_message.message,
                 message.author.id,
