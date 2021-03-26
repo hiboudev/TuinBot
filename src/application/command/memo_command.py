@@ -93,7 +93,6 @@ class MemoCommand(BaseCommand):
 
         name = ParsingUtils.to_single_line(name_executor.get_text().replace("`", ""))
         content = "`1`\u00A0\u00A0\u00A0" + ParsingUtils.to_single_line(content_executor.get_text())
-        # ParsingUtils.format_links(content)
 
         if DbMemo.add_memo(message.author.id, name, content):
             cls._reply(message, "Mémo [**{}**] ajouté !".format(name))
@@ -117,6 +116,13 @@ class MemoCommand(BaseCommand):
             return
 
         add_content = f"\n`{line_count + 1}`\u00A0\u00A0\u00A0" + content_executor.get_text()
+
+        total_char_count = len(memo.content) + len(add_content)
+        if total_char_count > cls._MAX_CHARS:
+            cls._display_error(message,
+                               "Le mémo [**{}**] va dépasser les {} caractères, il faut en créer un autre.".format(
+                                   name_executor.get_text(), cls._MAX_CHARS))
+            return
 
         if cls._execute_db_bool_request(lambda: DbMemo.edit_memo(message.author.id,
                                                                  name_executor.get_text(),
