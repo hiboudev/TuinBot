@@ -30,13 +30,10 @@ class MemoCommand(BaseCommand):
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
+        # Limit to 3 chars only when creating memo.
         name_param_creation = CommandParam("nom", "Nom du mémo", ParamType.TEXT, TextMinMaxParamConfig(3))
-        # No need to limite to 3 chars when we retrieve a memo => makes help page lighter.
         name_param_use = CommandParam("nom", "Nom du mémo", ParamType.TEXT)
         name_part_param = CommandParam("nom", "Une partie du nom du mémo", ParamType.TEXT)
-        edit_param = CommandParam("edit", "", ParamType.FIXED_VALUE)
-        memo_number_param = CommandParam("numéro", "Le numéro du mémo affiché dans la liste", ParamType.INT,
-                                         NumberMinMaxParamConfig(1, cls._MAX_PER_USER))
 
         syntaxes = [
             CommandSyntax("Ajoute un mémo",
@@ -54,13 +51,21 @@ class MemoCommand(BaseCommand):
                           ),
             CommandSyntax("Lis un mémo via son numéro",
                           cls._get_memo_by_position,
-                          memo_number_param
+                          CommandParam("numéro", "Le numéro du mémo affiché dans la liste", ParamType.INT,
+                                       NumberMinMaxParamConfig(1, cls._MAX_PER_USER))
                           ),
             CommandSyntax("Ajoute une ligne à un mémo",
                           cls._edit_memo,
                           name_param_use,
-                          edit_param,
+                          CommandParam("edit", "", ParamType.FIXED_VALUE),
                           ApplicationParams.SENTENCE
+                          ),
+            CommandSyntax("Lis une ligne d'un mémo",
+                          cls._get_memo_line,
+                          name_part_param,
+                          CommandParam("ligne", "", ParamType.FIXED_VALUE),
+                          CommandParam("numéro", "Numéro de la ligne", ParamType.INT,
+                                       NumberMinMaxParamConfig(1, cls._MAX_LINES))
                           ),
             CommandSyntax("Supprime un mémo",
                           cls._remove_memo,
@@ -123,6 +128,30 @@ class MemoCommand(BaseCommand):
         else:
             cls._display_error(message, "Aucun nom de mémo avec le terme `{}`.".format(
                 name_executor.get_text()))
+
+    # noinspection PyUnusedLocal
+    @classmethod
+    def _get_memo_line(cls, message: Message, name_executor: TextParamExecutor, line_executor: FixedValueParamExecutor,
+                       int_executor: IntParamExecutor):
+        memo = DbMemo.get_memo(message.author.id, name_executor.get_text())
+
+        if not memo:
+            cls._display_error(message, "Aucun nom de mémo avec le terme `{}`.".format(
+                name_executor.get_text()))
+            return
+
+        line_position = int_executor.get_int()
+        line_count = ParsingUtils.count_lines(memo.content)
+        # remove bullet and space at begin of line
+        line = ParsingUtils.get_line(memo.content, line_position - 1)[2:]
+
+        if not line:
+            cls._display_error(message,
+                               "Le mémo [**{}**] n'a que `{}` lignes.".format(name_executor.get_text(),
+                                                                              line_count))
+            return
+
+        cls._reply(message, AppMessages.get_memo_line_embed(line))
 
     @classmethod
     def _get_memo_by_position(cls, message: Message, int_executor: IntParamExecutor):

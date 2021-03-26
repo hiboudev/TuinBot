@@ -5,6 +5,7 @@ from core.utils.parsing_utils import ParsingUtils
 
 class AppMessages:
     _HOOK_EMBED_COLOR = 0x17907e
+    _MEMO_EMBED_COLOR = 0x594566
 
     @classmethod
     def get_hook_embed(cls, title: str = None, description: str = None) -> Embed:
@@ -32,12 +33,19 @@ class AppMessages:
 
         return embed
 
-    @staticmethod
-    def get_memo_embed(title: str, content: str, footer: str = None) -> Embed:
+    @classmethod
+    def get_memo_embed(cls, title: str, content: str, footer: str = None) -> Embed:
         embed = Embed(title=f"Mémo [{title}]",
                       description=content,
-                      color=0x594566)
+                      color=cls._MEMO_EMBED_COLOR)
         if footer:
             embed.set_footer(text=footer)
+
+        return embed
+
+    @classmethod
+    def get_memo_line_embed(cls, content: str) -> Embed:
+        embed = Embed(description=content,
+                      color=cls._MEMO_EMBED_COLOR)
 
         return embed

@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 from discord import User, Client
 from emoji import emoji_lis
@@ -134,6 +134,18 @@ class ParsingUtils:
             return 0
 
         return text.count("\n") + 1
+
+    @staticmethod
+    def get_line(text: str, index: int) -> Union[str, None]:
+        if index < 0:
+            raise ValueError("Index must be positive!")
+
+        lines = text.split("\n")
+
+        if index >= len(lines):
+            return None
+
+        return lines[index]
 
 
 class UserSearchResult:
