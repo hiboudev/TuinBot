@@ -98,13 +98,17 @@ class AutoSpoilerCommand(BaseCommand):
         return True
 
     @staticmethod
+    def hook_can_delete_message() -> bool:
+        return True
+
+    @staticmethod
     def hook_type() -> HookType:
         return HookType.MESSAGE
 
     @classmethod
-    def execute_message_hook(cls, message: Message):
+    def execute_message_hook(cls, message: Message) -> bool:
         if not cls._can_execute_hook(message):
-            return
+            return False
 
         spoil_author_id = DbAutoSpoiler.use_auto_spoiler(message.guild.id,
                                                          message.channel.id,
@@ -112,6 +116,9 @@ class AutoSpoilerCommand(BaseCommand):
 
         if spoil_author_id:
             cls._async(cls._execute_hook_async(message, spoil_author_id))
+            return True
+
+        return False
 
     @staticmethod
     def _can_execute_hook(message: Message) -> bool:

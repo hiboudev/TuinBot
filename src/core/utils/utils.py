@@ -7,5 +7,7 @@ class Utils:
     @staticmethod
     def multisort(list_to_sort: List, specs: Tuple):
         for key, reverse in reversed(specs):
-            list_to_sort.sort(key=attrgetter(key), reverse=reverse)
+            if isinstance(key, str):
+                key = attrgetter(key)
+            list_to_sort.sort(key=key, reverse=reverse)
         return list_to_sort

@@ -144,13 +144,15 @@ class AutoReactionCommand(BaseCommand):
         return HookType.MESSAGE
 
     @classmethod
-    def execute_message_hook(cls, message: Message):
+    def execute_message_hook(cls, message: Message) -> bool:
         reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
                                                       message.author.id,
                                                       message.channel.id)
 
         if reactions:
             cls._async(cls._execute_hook_async(message, reactions))
+
+        return False
 
     @classmethod
     async def _execute_hook_async(cls, message: Message, reactions: List[str]):

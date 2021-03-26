@@ -114,11 +114,13 @@ class ReplyMessageCommand(BaseCommand):
         return HookType.MESSAGE
 
     @classmethod
-    def execute_message_hook(cls, message: Message):
+    def execute_message_hook(cls, message: Message) -> bool:
         messages = DbAutoReply.use_auto_replys(message.guild.id, message.channel.id, message.author.id)
 
         if messages:
             cls._async(cls._execute_hook_async(message, messages))
+
+        return False
 
     @classmethod
     async def _execute_hook_async(cls, message: Message, messages: List[AutoReply]):

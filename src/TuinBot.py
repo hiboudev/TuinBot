@@ -14,10 +14,10 @@ from core.data.properties import AppProperties
 AppProperties.load("../data/bot.properties")
 
 CommandRepository.set_command_list(TuinBotCommand,
+                                   ReplyMessageCommand,
+                                   TypingMessageCommand,
                                    AutoReactionCommand,
                                    AutoSpoilerCommand,
-                                   TypingMessageCommand,
-                                   ReplyMessageCommand,
                                    MemoCommand,
                                    TestCommand)
 

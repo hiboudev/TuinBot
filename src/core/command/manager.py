@@ -29,7 +29,9 @@ class CommandManager:
         if not cls._parse_command(message, client):
             # we don't apply hooks on a command message
             for hook in CommandRepository.get_hooks(HookType.MESSAGE):
-                hook.execute_message_hook(message)
+                # stop if a hook deletes the user message
+                if hook.execute_message_hook(message):
+                    break
 
     # noinspection PyUnusedLocal
     @classmethod
