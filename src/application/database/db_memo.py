@@ -53,26 +53,26 @@ class DbMemo:
             result = cursor.fetchone()
             return None if not result else Memo(result[0], result[1])
 
-    @staticmethod
-    def get_memo_by_position(author_id: int, position: int) -> Union[Memo, None]:
-        with DatabaseConnection() as cursor:
-            # cursor.execute("SET @row_number = 0;")
-            cursor.execute("""
-                                SELECT
-                                    name,
-                                    content
-                                FROM
-                                    memo
-                                WHERE
-                                    author_id = %(author_id)s
-                                ORDER BY
-                                    name
-                                LIMIT %(position)s, 1
-                                """,
-                           {"author_id": author_id, "position": position - 1})
-
-            result = cursor.fetchone()
-            return None if not result else Memo(result[0], result[1])
+    # @staticmethod
+    # def get_memo_by_position(author_id: int, position: int) -> Union[Memo, None]:
+    #     with DatabaseConnection() as cursor:
+    #         # cursor.execute("SET @row_number = 0;")
+    #         cursor.execute("""
+    #                             SELECT
+    #                                 name,
+    #                                 content
+    #                             FROM
+    #                                 memo
+    #                             WHERE
+    #                                 author_id = %(author_id)s
+    #                             ORDER BY
+    #                                 name
+    #                             LIMIT %(position)s, 1
+    #                             """,
+    #                        {"author_id": author_id, "position": position - 1})
+    #
+    #         result = cursor.fetchone()
+    #         return None if not result else Memo(result[0], result[1])
 
     @staticmethod
     def remove_memo(author_id: int, name: str) -> bool:
