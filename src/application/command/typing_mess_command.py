@@ -17,7 +17,6 @@ class TypingMessageCommand(BaseCommand):
     # TODO commande très semblable à reply, généraliser ?
 
     _MAX_PER_USER = 1
-    _MAX_CHARS = 300
 
     @staticmethod
     def name() -> str:
@@ -40,10 +39,7 @@ class TypingMessageCommand(BaseCommand):
             CommandSyntax("Enregistre un message",
                           cls._add_typing_message,
                           ApplicationParams.USER,
-                          CommandParam(ApplicationParams.SENTENCE.name,
-                                       ApplicationParams.SENTENCE.description,
-                                       ParamType.TEXT,
-                                       TextMinMaxParamConfig(max_length=cls._MAX_CHARS))
+                          ApplicationParams.RECORDED_MESSAGE
                           ),
             CommandSyntax("Retire ton message",
                           cls._remove_typing_message,

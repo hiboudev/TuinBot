@@ -8,14 +8,12 @@ from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
-from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
 
 
 class ReplyMessageCommand(BaseCommand):
     _MAX_PER_USER = 2
-    _MAX_CHARS = 300
 
     @staticmethod
     def name() -> str:
@@ -38,10 +36,7 @@ class ReplyMessageCommand(BaseCommand):
             CommandSyntax("Enregistre un message",
                           cls._add_reply,
                           ApplicationParams.USER,
-                          CommandParam(ApplicationParams.SENTENCE.name,
-                                       ApplicationParams.SENTENCE.description,
-                                       ParamType.TEXT,
-                                       TextMinMaxParamConfig(max_length=cls._MAX_CHARS))
+                          ApplicationParams.RECORDED_MESSAGE
                           ),
             CommandSyntax("Retire ton message",
                           cls._remove_reply,
