@@ -150,7 +150,7 @@ class ParsingUtils:
     @staticmethod
     def to_single_line(text: str) -> str:
         # TODO compile regexx ?
-        return re.sub(r"\s+", " ", text.replace("\n", "")).strip()
+        return re.sub(r"[\s\n]+", " ", text).strip()
 
 
 class UserSearchResult:

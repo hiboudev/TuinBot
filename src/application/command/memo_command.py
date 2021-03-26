@@ -93,8 +93,9 @@ class MemoCommand(BaseCommand):
 
         name = ParsingUtils.to_single_line(name_executor.get_text().replace("`", ""))
         content = "`1`\u00A0\u00A0\u00A0" + ParsingUtils.to_single_line(content_executor.get_text())
+        # ParsingUtils.format_links(content)
 
-        if DbMemo.add_memo(message.author.id, name, ParsingUtils.format_links(content)):
+        if DbMemo.add_memo(message.author.id, name, content):
             cls._reply(message, "Mémo [**{}**] ajouté !".format(name))
         else:
             cls._display_error(message, "Le mémo [**{}**] existe déjà, veux-tu l'éditer ?".format(name))
