@@ -13,7 +13,7 @@ from core.param.syntax import CommandSyntax
 
 class AutoReactionCommand(BaseCommand):
     _MAX_REACTION_PER_TARGET = 6
-    _SHOTS = 3
+    _SHOTS = 5
 
     @staticmethod
     def name() -> str:

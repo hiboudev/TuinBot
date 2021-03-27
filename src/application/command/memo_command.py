@@ -34,7 +34,7 @@ class MemoCommand(BaseCommand):
         # Limit to 3 chars only when creating memo.
         name_param_creation = CommandParam("nom", "Nom du mémo", ParamType.TEXT, TextMinMaxParamConfig(3))
         name_param_use = CommandParam("nom", "Nom exact du mémo", ParamType.TEXT)
-        name_part_param = CommandParam("nom", "Une partie du nom du mémo", ParamType.TEXT)
+        name_part_param = CommandParam("nom", "Le début du nom du mémo", ParamType.TEXT)
         delete_param = CommandParam("suppr", "", ParamType.FIXED_VALUE)
 
         syntaxes = [
@@ -108,7 +108,7 @@ class MemoCommand(BaseCommand):
         memo = DbMemo.get_memo(message.author.id, name_executor.get_text())
 
         if not memo:
-            cls._display_error(message, "Aucun mémo trouvé avec le terme `{}`.".format(
+            cls._display_error(message, "Aucun mémo trouvé commençant par `{}`.".format(
                 name_executor.get_text()))
             return
 
@@ -125,7 +125,7 @@ class MemoCommand(BaseCommand):
 
         memo = DbMemo.get_memo(message.author.id, name_executor.get_text())
         if not memo:
-            cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
+            cls._display_error(message, "Aucun mémo trouvé commençant par `{}`.".format(name_executor.get_text()))
             return
 
         line_count = len(memo.lines)
@@ -154,7 +154,7 @@ class MemoCommand(BaseCommand):
         # Just to display a better error message
         line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text())
         if line_count == 0:
-            cls._display_error(message, "Aucun mémo trouvé avec le terme `{}`.".format(name_executor.get_text()))
+            cls._display_error(message, "Aucun mémo trouvé commençant par `{}`.".format(name_executor.get_text()))
             return
 
         if line_count < int_executor.get_int():

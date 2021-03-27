@@ -64,7 +64,7 @@ class DbMemo:
                                 LIMIT 1
                                 """,
                            {"author_id": author_id,
-                            "name_part": name_part if exact_name else "%" + name_part + "%"
+                            "name_part": name_part if exact_name else name_part + "%"
                             })
 
             result = cursor.fetchone()
@@ -109,7 +109,7 @@ class DbMemo:
                                     ),
                                     %(content)s)
                                 """,
-                           {"author_id": author_id, "name": "%" + name + "%", "content": content})
+                           {"author_id": author_id, "name": name + "%", "content": content})
 
             return cursor.rowcount > 0
 
@@ -144,7 +144,7 @@ class DbMemo:
                                     %(line_position)s, 1
                                     
                                 """,
-                           {"author_id": author_id, "name_part": "%" + name_part + "%",
+                           {"author_id": author_id, "name_part": name_part + "%",
                             "line_position": line_position - 1})
 
             result = cursor.fetchone()
@@ -260,7 +260,7 @@ class DbMemo:
                                                 )
                                 """,
                            {"author_id": author_id,
-                            "name_part": name_part if exact_name else "%" + name_part + "%"
+                            "name_part": name_part if exact_name else name_part + "%"
                             })
 
             return cursor.fetchone()[0]
