@@ -5,6 +5,7 @@ from core.data.properties import AppProperties
 
 class DatabaseConnection:
     # Doc mysql python : https://python.doctor/page-database-data-base-donnees-query-sql-mysql-postgre-sqlite
+    # Utiliser des Dict : https://stackoverflow.com/a/61897954/2573194
 
     def __enter__(self):
         self.conn = mysql.connector.connect(

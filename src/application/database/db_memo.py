@@ -7,7 +7,7 @@ from application.database.db_connexion import DatabaseConnection
 @dataclass
 class Memo:
     name: str
-    content: str
+    lines: List[str]
 
 
 @dataclass
@@ -23,67 +23,178 @@ class DbMemo:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                                 INSERT IGNORE INTO
-                                    memo (author_id, name, content)
+                                    memo (author_id, name)
                                 VALUES
-                                    (%(author_id)s, %(name)s, %(content)s)
+                                    (%(author_id)s, %(name)s)
                                """,
-                           {"author_id": author_id, "name": name, "content": content})
+                           {"author_id": author_id, "name": name})
+
+            if cursor.rowcount == 0:
+                return False
+
+            memo_id = cursor.lastrowid
+
+            cursor.execute("""
+                                INSERT INTO
+                                    memo_line (memo_id, content)
+                                VALUES
+                                    (%(memo_id)s, %(content)s)
+                               """,
+                           {"memo_id": memo_id, "content": content})
 
             return cursor.rowcount > 0
 
     @staticmethod
-    def get_memo(author_id: int, name: str) -> Union[Memo, None]:
+    def get_memo(author_id: int, name_part: str) -> Union[Memo, None]:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                                 SELECT
-                                    name,
-                                    content
+                                    id,
+                                    name
                                 FROM
                                     memo
                                 WHERE
                                     author_id=%(author_id)s
                                 AND
-                                    name LIKE %(name)s
+                                    name LIKE %(name_part)s
                                 ORDER BY
                                     name
                                 LIMIT 1
                                 """,
-                           {"author_id": author_id, "name": "%" + name + "%"})
+                           {"author_id": author_id, "name_part": "%" + name_part + "%"})
 
             result = cursor.fetchone()
-            return None if not result else Memo(result[0], result[1])
+            if not result:
+                return None
 
-    # @staticmethod
-    # def get_memo_by_position(author_id: int, position: int) -> Union[Memo, None]:
-    #     with DatabaseConnection() as cursor:
-    #         # cursor.execute("SET @row_number = 0;")
-    #         cursor.execute("""
-    #                             SELECT
-    #                                 name,
-    #                                 content
-    #                             FROM
-    #                                 memo
-    #                             WHERE
-    #                                 author_id = %(author_id)s
-    #                             ORDER BY
-    #                                 name
-    #                             LIMIT %(position)s, 1
-    #                             """,
-    #                        {"author_id": author_id, "position": position - 1})
-    #
-    #         result = cursor.fetchone()
-    #         return None if not result else Memo(result[0], result[1])
+            memo_id = result[0]
+            memo_name = result[1]
+
+            cursor.execute("""
+                                SELECT
+                                    content
+                                FROM
+                                    memo_line
+                                WHERE
+                                    memo_id=%(memo_id)s
+                                ORDER BY
+                                    id
+                                """,
+                           {"memo_id": memo_id})
+
+            lines = [i[0] for i in cursor.fetchall()]
+
+            return Memo(memo_name, lines)
+
+    @staticmethod
+    def edit_memo(author_id: int, name: str, content: str) -> bool:
+        with DatabaseConnection() as cursor:
+            cursor.execute("""
+                                INSERT INTO
+                                    memo_line (memo_id, content)
+                                VALUES (
+                                    (
+                                        SELECT
+                                            id
+                                        FROM
+                                            memo
+                                        WHERE
+                                            author_id = %(author_id)s
+                                        AND
+                                            name = %(name)s
+                                    ),
+                                    %(content)s)
+                                """,
+                           {"author_id": author_id, "name": name, "content": content})
+
+            return cursor.rowcount > 0
+
+    @staticmethod
+    def get_memo_line(author_id: int, name_part: str, line_position: int) -> Union[str, None]:
+        """line_position starts at 1"""
+        if line_position < 1:
+            raise ValueError("line_position must be > 0")
+
+        with DatabaseConnection() as cursor:
+            cursor.execute("SET @row_number = 0;")
+            cursor.execute("""
+                                SELECT
+                                    content
+                                FROM
+                                    memo_line
+                                WHERE
+                                    memo_id
+                                        IN  (
+                                                SELECT
+                                                    id
+                                                FROM
+                                                    memo
+                                                WHERE
+                                                    author_id = %(author_id)s
+                                                AND
+                                                    name LIKE %(name_part)s
+                                            )
+                                ORDER BY
+                                    id
+                                LIMIT
+                                    %(line_position)s, 1
+                                    
+                                """,
+                           {"author_id": author_id, "name_part": "%" + name_part + "%",
+                            "line_position": line_position - 1})
+
+            result = cursor.fetchone()
+            return result[0] if result else None
+
+    @staticmethod
+    def remove_memo_line(author_id: int, name: str, line_position: int) -> bool:
+        """line_position starts at 1"""
+        if line_position < 1:
+            raise ValueError("line_position must be > 0")
+        with DatabaseConnection() as cursor:
+            cursor.execute("""
+                                DELETE FROM
+                                    memo_line
+                                WHERE
+                                        id =    (
+                                                    SELECT  id
+                                                    FROM    (
+                                                                SELECT  id
+                                                                FROM    memo_line
+                                                                WHERE   memo_id
+                                                                        IN  (
+                                                                                SELECT  id
+                                                                                FROM    memo
+                                                                                WHERE   author_id = %(author_id)s
+                                                                                AND     name = %(name)s
+                                                                            )
+                                                                    ORDER BY    id
+                                                                    LIMIT       %(line_position)s,1
+                                                            ) as t
+                                                )
+                                        
+                                   """,
+                           {"author_id": author_id, "name": name, "line_position": line_position - 1})
+
+            return cursor.rowcount > 0
 
     @staticmethod
     def remove_memo(author_id: int, name: str) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
-                                DELETE FROM
+                                DELETE
+                                    memo,
+                                    memo_line
+                                FROM
                                     memo
+                                JOIN
+                                    memo_line
+                                        ON
+                                            memo_line.memo_id = memo.id
                                 WHERE
-                                    author_id=%(author_id)s
+                                    memo.author_id = %(author_id)s
                                 AND
-                                    name = %(name)s
+                                    memo.name = %(name)s
                                """,
                            {"author_id": author_id, "name": name})
 
@@ -108,40 +219,6 @@ class DbMemo:
 
             return [MemoListItem(i[0], i[1]) for i in cursor.fetchall()]
 
-    # @staticmethod
-    # def replace_memo(author_id: int, name: str, content: str) -> bool:
-    #     with DatabaseConnection() as cursor:
-    #         cursor.execute("""
-    #                             UPDATE
-    #                                 memo
-    #                             SET
-    #                                 content =  %(content)s
-    #                             WHERE
-    #                                 author_id = %(author_id)s
-    #                             AND
-    #                                 name = %(name)s
-    #                             """,
-    #                        {"author_id": author_id, "name": name, "content": content})
-    #
-    #         return cursor.rowcount > 0
-
-    @staticmethod
-    def edit_memo(author_id: int, name: str, add_content: str) -> bool:
-        with DatabaseConnection() as cursor:
-            cursor.execute("""
-                                UPDATE
-                                    memo
-                                SET
-                                    content =  CONCAT(content, %(add_content)s)
-                                WHERE
-                                    author_id = %(author_id)s
-                                AND
-                                    name = %(name)s
-                                """,
-                           {"author_id": author_id, "name": name, "add_content": add_content})
-
-            return cursor.rowcount > 0
-
     @classmethod
     def count_user_memos(cls, author_id: int) -> int:
         with DatabaseConnection() as cursor:
@@ -153,5 +230,29 @@ class DbMemo:
                                         author_id = %(author_id)s
                                 """,
                            {"author_id": author_id})
+
+            return cursor.fetchone()[0]
+
+    @classmethod
+    def count_memo_lines(cls, author_id: int, name_part: str) -> int:
+        with DatabaseConnection() as cursor:
+            cursor.execute("""
+                                SELECT COUNT(*)
+                                    FROM
+                                        memo_line
+                                    WHERE
+                                        memo_id
+                                            IN  (
+                                                    SELECT
+                                                        id
+                                                    FROM
+                                                        memo
+                                                    WHERE
+                                                        author_id = %(author_id)s
+                                                    AND
+                                                        name LIKE %(name_part)s
+                                                )
+                                """,
+                           {"author_id": author_id, "name_part": "%" + name_part + "%"})
 
             return cursor.fetchone()[0]

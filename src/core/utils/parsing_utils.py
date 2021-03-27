@@ -129,24 +129,24 @@ class ParsingUtils:
     def is_unique_link(cls, text: str) -> bool:
         return cls._link_reg_ex.fullmatch(text) is not None
 
-    @staticmethod
-    def count_lines(text: str) -> int:
-        if not text:
-            return 0
+    # @staticmethod
+    # def count_lines(text: str) -> int:
+    #     if not text:
+    #         return 0
+    #
+    #     return text.count("\n") + 1
 
-        return text.count("\n") + 1
-
-    @staticmethod
-    def get_line(text: str, index: int) -> Union[str, None]:
-        if index < 0:
-            raise ValueError("Index must be positive!")
-
-        lines = text.split("\n")
-
-        if index >= len(lines):
-            return None
-
-        return lines[index]
+    # @staticmethod
+    # def get_line(text: str, index: int) -> Union[str, None]:
+    #     if index < 0:
+    #         raise ValueError("Index must be positive!")
+    #
+    #     lines = text.split("\n")
+    #
+    #     if index >= len(lines):
+    #         return None
+    #
+    #     return lines[index]
 
     @staticmethod
     def to_single_line(text: str) -> str:

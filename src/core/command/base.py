@@ -31,7 +31,7 @@ class BaseCommand(Command, ABC):
         syntaxes = cls._get_sorted_syntaxes()
 
         if len(command_params) < cls._min_params_count or len(command_params) > cls._max_params_count:
-            cls._display_error(message, "Nombre de paramètres inatendu !")
+            cls._display_error(message, "Nombre de paramètres inattendu !")
             return
 
         """ Stores one executor by parameter index and parameter name,

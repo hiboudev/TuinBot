@@ -1,4 +1,3 @@
-import re
 from typing import List
 
 from discord import Message
@@ -36,6 +35,7 @@ class MemoCommand(BaseCommand):
         name_param_creation = CommandParam("nom", "Nom du mémo", ParamType.TEXT, TextMinMaxParamConfig(3))
         name_param_use = CommandParam("nom", "Nom du mémo", ParamType.TEXT)
         name_part_param = CommandParam("nom", "Une partie du nom du mémo", ParamType.TEXT)
+        delete_param = CommandParam("suppr", "", ParamType.FIXED_VALUE)
 
         syntaxes = [
             CommandSyntax("Ajoute un mémo",
@@ -54,11 +54,6 @@ class MemoCommand(BaseCommand):
                           cls._get_memo_list,
                           ApplicationParams.LIST
                           ),
-            # CommandSyntax("Lis un mémo via son numéro",
-            #               cls._get_memo_by_position,
-            #               CommandParam("numéro", "Le numéro du mémo affiché dans la liste", ParamType.INT,
-            #                            NumberMinMaxParamConfig(1, cls._MAX_PER_USER))
-            #               ),
             CommandSyntax("Ajoute une ligne à un mémo",
                           cls._edit_memo,
                           name_param_use,
@@ -72,10 +67,18 @@ class MemoCommand(BaseCommand):
                           CommandParam("numéro", "Numéro de la ligne", ParamType.INT,
                                        NumberMinMaxParamConfig(1, cls._MAX_LINES))
                           ),
+            CommandSyntax("Supprime une ligne d'un mémo",
+                          cls._remove_memo_line,
+                          name_part_param,
+                          CommandParam("ligne", "", ParamType.FIXED_VALUE),
+                          CommandParam("numéro", "Numéro de la ligne", ParamType.INT,
+                                       NumberMinMaxParamConfig(1, cls._MAX_LINES)),
+                          delete_param
+                          ),
             CommandSyntax("Supprime un mémo",
                           cls._remove_memo,
                           name_param_use,
-                          ApplicationParams.STOP
+                          delete_param
                           )
         ]
 
@@ -93,12 +96,27 @@ class MemoCommand(BaseCommand):
             return
 
         name = ParsingUtils.to_single_line(name_executor.get_text().replace("`", ""))
-        content = "`1`\u00A0\u00A0\u00A0" + ParsingUtils.to_single_line(content_executor.get_text())
+        content = ParsingUtils.to_single_line(content_executor.get_text())
 
         if DbMemo.add_memo(message.author.id, name, content):
             cls._reply(message, "Mémo [**{}**] ajouté !".format(name))
         else:
             cls._display_error(message, "Le mémo [**{}**] existe déjà, veux-tu l'éditer ?".format(name))
+
+    @classmethod
+    def _get_memo(cls, message: Message, name_executor: TextParamExecutor):
+        memo = DbMemo.get_memo(message.author.id, name_executor.get_text())
+
+        if not memo:
+            cls._display_error(message, "Aucun mémo trouvé avec le terme `{}`.".format(
+                name_executor.get_text()))
+            return
+
+        content = "\n".join([f"`{line_count + 1}`\u00A0\u00A0\u00A0{line}"
+                             for line_count, line in enumerate(memo.lines)
+                             ])
+
+        cls._reply(message, AppMessages.get_memo_embed(memo.name, content), 20)
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -110,15 +128,13 @@ class MemoCommand(BaseCommand):
             cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
             return
 
-        line_count = ParsingUtils.count_lines(memo.content)
+        line_count = len(memo.lines)
         if line_count >= cls._MAX_LINES:
             cls._display_error(message, "Le mémo [**{}**] fait déjà {} lignes, tu ne peux plus rien rajouter.".format(
                 name_executor.get_text(), cls._MAX_LINES))
             return
 
-        add_content = f"\n`{line_count + 1}`\u00A0\u00A0\u00A0" + content_executor.get_text()
-
-        total_char_count = len(memo.content) + len(add_content)
+        total_char_count = len("".join(memo.lines)) + len(content_executor.get_text())
         if total_char_count > cls._MAX_CHARS:
             cls._display_error(message,
                                "Le mémo [**{}**] va dépasser les {} caractères, il faut en créer un autre.".format(
@@ -127,60 +143,60 @@ class MemoCommand(BaseCommand):
 
         if cls._execute_db_bool_request(lambda: DbMemo.edit_memo(message.author.id,
                                                                  name_executor.get_text(),
-                                                                 add_content),
+                                                                 content_executor.get_text()),
                                         message):
             cls._reply(message, "Mémo [**{}**] édité !".format(name_executor.get_text()))
-
-    @classmethod
-    def _get_memo(cls, message: Message, name_executor: TextParamExecutor):
-        memo = DbMemo.get_memo(message.author.id, name_executor.get_text())
-        if memo:
-            cls._reply(message,
-                       AppMessages.get_memo_embed(memo.name, memo.content),
-                       20)
-        else:
-            cls._display_error(message, "Aucun nom de mémo avec le terme `{}`.".format(
-                name_executor.get_text()))
 
     # noinspection PyUnusedLocal
     @classmethod
     def _get_memo_line(cls, message: Message, name_executor: TextParamExecutor, line_executor: FixedValueParamExecutor,
-                       int_executor: IntParamExecutor):
-        memo = DbMemo.get_memo(message.author.id, name_executor.get_text())
-
-        if not memo:
-            cls._display_error(message, "Aucun nom de mémo avec le terme `{}`.".format(
-                name_executor.get_text()))
+                       int_executor: IntParamExecutor, stop_executor: FixedValueParamExecutor):
+        # Just to display a better error message
+        line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text())
+        if line_count == 0:
+            cls._display_error(message, "Aucun mémo trouvé avec le terme `{}`.".format(name_executor.get_text()))
             return
 
-        line_position = int_executor.get_int()
-        line_count = ParsingUtils.count_lines(memo.content)
-        # remove bullet and space at begin of line
-        line = ParsingUtils.get_line(memo.content, line_position - 1)
-        line = re.sub(r"^`\d+`\s+", "", line)
-
-        if not line:
+        if line_count < int_executor.get_int():
             cls._display_error(message,
-                               "Le mémo [**{}**] n'a que `{}` lignes.".format(name_executor.get_text(),
-                                                                              line_count))
+                               "Le mémo [**{}**] n'a que `{}` ligne(s).".format(name_executor.get_text(),
+                                                                                line_count))
             return
 
-        cls._reply(message, AppMessages.get_memo_line_embed(line), -1)
+        memo_line = DbMemo.get_memo_line(message.author.id, name_executor.get_text(), int_executor.get_int())
 
-    # @classmethod
-    # def _get_memo_by_position(cls, message: Message, int_executor: IntParamExecutor):
-    #     memo = DbMemo.get_memo_by_position(message.author.id, int_executor.get_int())
-    #     if memo:
-    #         cls._reply(message,
-    #                    AppMessages.get_memo_embed(memo.name, memo.content),
-    #                    20)
-    #     else:
-    #         cls._display_error(message, "Aucun mémo avec le numéro `{}`.".format(
-    #             int_executor.get_int()))
+        if not memo_line:
+            cls._display_error(message, "Je n'ai rien trouvé.")
+            return
+
+        cls._reply(message, AppMessages.get_memo_line_embed(memo_line), -1)
 
     # noinspection PyUnusedLocal
     @classmethod
-    def _remove_memo(cls, message: Message, name_executor: TextParamExecutor, stop_executor: FixedValueParamExecutor):
+    def _remove_memo_line(cls, message: Message, name_executor: TextParamExecutor,
+                          line_executor: FixedValueParamExecutor,
+                          int_executor: IntParamExecutor, delete_executor: FixedValueParamExecutor):
+        # Just to display a better error message
+        line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text())
+        if line_count == 0:
+            cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
+            return
+
+        if line_count < int_executor.get_int():
+            cls._display_error(message,
+                               "Le mémo [**{}**] n'a que `{}` ligne(s).".format(name_executor.get_text(),
+                                                                                line_count))
+            return
+
+        if cls._execute_db_bool_request(
+                lambda: DbMemo.remove_memo_line(message.author.id, name_executor.get_text(), int_executor.get_int()),
+                message):
+            cls._reply(message,
+                       f"Ligne `{int_executor.get_int()}` supprimée du mémo [**{name_executor.get_text()}**] !")
+
+    # noinspection PyUnusedLocal
+    @classmethod
+    def _remove_memo(cls, message: Message, name_executor: TextParamExecutor, delete_executor: FixedValueParamExecutor):
         if DbMemo.remove_memo(message.author.id, name_executor.get_text()):
             cls._reply(message, "Mémo [**{}**] supprimé !".format(name_executor.get_text()))
         else:
@@ -194,15 +210,8 @@ class MemoCommand(BaseCommand):
         if not memos:
             cls._reply(message, "Tu n'as aucun mémo enregistré.")
         else:
-            # Replace spaces with unbreakable so memo titles containing space are not wrapped.
-            # memos = ["`" + memo.replace(" ", "\u00A0") + "`" for memo in memos]
             memo_list_str = []
             for memo in memos:
-                # With memo number
-                # memo_list_str.append("{}: `{}`".format(memo.position,
-                #                                        memo.name.replace(" ", "\u00A0")
-                #                                        )
-                #                      )
                 memo_list_str.append("`{}`".format(memo.name.replace(" ", "\u00A0")))
 
             cls._reply(message,
