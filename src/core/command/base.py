@@ -14,7 +14,8 @@ from core.utils.utils import Utils
 
 
 class BaseCommand(Command, ABC):
-    _delete_delay = 10
+    _delete_delay = 5
+    _delete_delay_error = 12
     _delete_delay_help = 40
 
     _syntaxes = None
@@ -125,7 +126,7 @@ class BaseCommand(Command, ABC):
 
     @classmethod
     def _display_error(cls, message: Message, error: str):
-        cls._reply(message, "%s Tape **!%s** pour afficher l'aide." % (error, cls.name()))
+        cls._reply(message, "%s Tape **!%s** pour afficher l'aide." % (error, cls.name()), cls._delete_delay_error)
 
     @classmethod
     def _display_help(cls, message: Message):
