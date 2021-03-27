@@ -10,7 +10,6 @@ from core.executor.executors import TextParamExecutor, FixedValueParamExecutor, 
 from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig, NumberMinMaxParamConfig
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
-from core.utils.sanitizer import Sanitizer
 
 
 class MemoCommand(BaseCommand):
@@ -36,7 +35,7 @@ class MemoCommand(BaseCommand):
     def _build_syntaxes(cls) -> List[CommandSyntax]:
         # Limit to 3 chars only when creating memo.
         name_param_creation = CommandParam("nom", "Nom du mémo", ParamType.TEXT, TextMinMaxParamConfig(3))
-        name_param_use = CommandParam("nom", "Nom exact du mémo", ParamType.TEXT)
+        name_param_use = CommandParam("nom", "Nom *exact* du mémo", ParamType.TEXT)
         name_part_param = CommandParam("nom", "Le début du nom du mémo", ParamType.TEXT)
         delete_param = CommandParam("suppr", "", ParamType.FIXED_VALUE)
 
@@ -188,10 +187,14 @@ class MemoCommand(BaseCommand):
     def _remove_memo_line(cls, message: Message, name_executor: TextParamExecutor,
                           line_executor: FixedValueParamExecutor,
                           int_executor: IntParamExecutor, delete_executor: FixedValueParamExecutor):
+
         # Just to display a better error message
-        memo_name = DbMemo.get_memo_name(message.author.id, name_executor.get_text())
+        memo_name = DbMemo.get_memo_name(message.author.id, name_executor.get_text(), True)
         if not memo_name:
-            cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
+            cls._display_error(message,
+                               ("Aucun mémo trouvé avec le nom `{}`."
+                                " Pour supprimer il faut taper le nom **exact** du mémo.").format(
+                                   name_executor.get_text()))
             return
 
         line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text(), True)
@@ -212,12 +215,17 @@ class MemoCommand(BaseCommand):
     @classmethod
     def _remove_memo(cls, message: Message, name_executor: TextParamExecutor, delete_executor: FixedValueParamExecutor):
         # Just to display a better message
-        memo_name = DbMemo.get_memo_name(message.author.id, name_executor.get_text())
+        memo_name = DbMemo.get_memo_name(message.author.id, name_executor.get_text(), True)
         if not memo_name:
-            cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
+            cls._display_error(message,
+                               ("Aucun mémo trouvé avec le nom `{}`."
+                                " Pour supprimer il faut taper le nom **exact** du mémo.").format(
+                                   name_executor.get_text()))
             return
 
-        if DbMemo.remove_memo(message.author.id, name_executor.get_text()):
+        if cls._execute_db_bool_request(
+                lambda: DbMemo.remove_memo(message.author.id, name_executor.get_text()),
+                message):
             cls._reply(message, "Mémo [**{}**] supprimé !".format(memo_name))
 
     # noinspection PyUnusedLocal

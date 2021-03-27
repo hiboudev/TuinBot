@@ -45,7 +45,9 @@ class DbMemo:
             return cursor.rowcount > 0
 
     @staticmethod
-    def get_memo_name(author_id: int, name_part: str) -> Union[str, None]:
+    def get_memo_name(author_id: int, name_part: str, exact_name: bool = False) -> Union[str, None]:
+        name_operator = "=" if exact_name else "LIKE"
+
         with DatabaseConnection() as cursor:
             cursor.execute(f"""
                                 SELECT
@@ -55,12 +57,12 @@ class DbMemo:
                                 WHERE
                                     author_id=%(author_id)s
                                 AND
-                                    name LIKE %(name_part)s
+                                    name {name_operator} %(name_part)s
                                 ORDER BY
                                     name
                                 LIMIT 1
                                 """,
-                           {"author_id": author_id, "name_part": name_part + "%"})
+                           {"author_id": author_id, "name_part": name_part if exact_name else name_part + "%"})
 
             result = cursor.fetchone()
             return result[0] if result else None
@@ -214,7 +216,7 @@ class DbMemo:
                                     memo_line
                                 FROM
                                     memo
-                                JOIN
+                                LEFT JOIN
                                     memo_line
                                         ON
                                             memo_line.memo_id = memo.id
