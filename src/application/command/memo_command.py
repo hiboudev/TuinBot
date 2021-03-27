@@ -33,7 +33,7 @@ class MemoCommand(BaseCommand):
     def _build_syntaxes(cls) -> List[CommandSyntax]:
         # Limit to 3 chars only when creating memo.
         name_param_creation = CommandParam("nom", "Nom du mémo", ParamType.TEXT, TextMinMaxParamConfig(3))
-        name_param_use = CommandParam("nom", "Nom du mémo", ParamType.TEXT)
+        name_param_use = CommandParam("nom", "Nom exact du mémo", ParamType.TEXT)
         name_part_param = CommandParam("nom", "Une partie du nom du mémo", ParamType.TEXT)
         delete_param = CommandParam("suppr", "", ParamType.FIXED_VALUE)
 
@@ -56,11 +56,11 @@ class MemoCommand(BaseCommand):
                           ),
             CommandSyntax("Ajoute une ligne à un mémo",
                           cls._edit_memo,
-                          name_param_use,
-                          CommandParam("edit", "", ParamType.FIXED_VALUE),
+                          name_part_param,
+                          CommandParam("ajout", "", ParamType.FIXED_VALUE),
                           ApplicationParams.SENTENCE
                           ),
-            CommandSyntax("Lis une ligne d'un mémo",
+            CommandSyntax("Lis une ligne d'un mémo",  # TODO indiquer que le message restera
                           cls._get_memo_line,
                           name_part_param,
                           CommandParam("ligne", "", ParamType.FIXED_VALUE),
@@ -69,7 +69,7 @@ class MemoCommand(BaseCommand):
                           ),
             CommandSyntax("Supprime une ligne d'un mémo",
                           cls._remove_memo_line,
-                          name_part_param,
+                          name_param_use,
                           CommandParam("ligne", "", ParamType.FIXED_VALUE),
                           CommandParam("numéro", "Numéro de la ligne", ParamType.INT,
                                        NumberMinMaxParamConfig(1, cls._MAX_LINES)),
@@ -145,12 +145,12 @@ class MemoCommand(BaseCommand):
                                                                  name_executor.get_text(),
                                                                  content_executor.get_text()),
                                         message):
-            cls._reply(message, "Mémo [**{}**] édité !".format(name_executor.get_text()))
+            cls._reply(message, "Mémo [**{}**] édité !".format(memo.name))
 
     # noinspection PyUnusedLocal
     @classmethod
     def _get_memo_line(cls, message: Message, name_executor: TextParamExecutor, line_executor: FixedValueParamExecutor,
-                       int_executor: IntParamExecutor, stop_executor: FixedValueParamExecutor):
+                       int_executor: IntParamExecutor):
         # Just to display a better error message
         line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text())
         if line_count == 0:
@@ -158,6 +158,7 @@ class MemoCommand(BaseCommand):
             return
 
         if line_count < int_executor.get_int():
+            # TODO on veut afficher le nom complet du mémo, par le morceau tapé par le user
             cls._display_error(message,
                                "Le mémo [**{}**] n'a que `{}` ligne(s).".format(name_executor.get_text(),
                                                                                 line_count))
@@ -177,7 +178,7 @@ class MemoCommand(BaseCommand):
                           line_executor: FixedValueParamExecutor,
                           int_executor: IntParamExecutor, delete_executor: FixedValueParamExecutor):
         # Just to display a better error message
-        line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text())
+        line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text(), True)
         if line_count == 0:
             cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
             return
