@@ -13,6 +13,7 @@ from core.param.syntax import CommandSyntax
 
 class AutoReactionCommand(BaseCommand):
     _MAX_REACTION_PER_TARGET = 6
+    _SHOTS = 3
 
     @staticmethod
     def name() -> str:
@@ -24,10 +25,10 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     def description_details(cls) -> [str, None]:
-        return ("La réaction n'apparaîtra que dans le salon où la commande a été tapée."
+        return (f"La réaction dure {cls._SHOTS} messages et n'apparaît que dans le salon où la commande a été tapée."
                 " Tu peux mettre 1 réaction par tuin,"
-                " et un tuin peut avoir au maximum {} réactions sur lui."
-                ).format(cls._MAX_REACTION_PER_TARGET)
+                f" et un tuin peut avoir au maximum {cls._MAX_REACTION_PER_TARGET} réactions sur lui."
+                )
 
     @classmethod
     def _build_syntaxes(cls) -> List[CommandSyntax]:
@@ -86,8 +87,8 @@ class AutoReactionCommand(BaseCommand):
                                                                          message.channel.id,
                                                                          message.author.id,
                                                                          user_executor.get_user().id,
-                                                                         emoji_executor.get_emoji()
-                                                                         ),
+                                                                         emoji_executor.get_emoji(),
+                                                                         cls._SHOTS),
                                         message):
             cls._reply(message,
                        "Réaction %s ajoutée à **%s** !" % (
@@ -145,7 +146,7 @@ class AutoReactionCommand(BaseCommand):
 
     @classmethod
     def execute_message_hook(cls, message: Message) -> bool:
-        reactions = DbAutoReaction.get_auto_reactions(message.guild.id,
+        reactions = DbAutoReaction.use_auto_reactions(message.guild.id,
                                                       message.author.id,
                                                       message.channel.id)
 

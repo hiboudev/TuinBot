@@ -5,23 +5,26 @@ from application.database.db_connexion import DatabaseConnection
 
 class DbAutoReaction:
     @staticmethod
-    def add_auto_reaction(guild_id: int, channel_id: int, author_id: int, target_id: int, emoji: str) -> bool:
+    def add_auto_reaction(guild_id: int, channel_id: int, author_id: int, target_id: int, emoji: str,
+                          shots: int) -> bool:
         with DatabaseConnection() as cursor:
             cursor.execute("""
                                 INSERT INTO
-                                    auto_reaction (guild_id, channel_id, author_id, target_id, emoji)
+                                    auto_reaction (guild_id, channel_id, author_id, target_id, emoji, remaining)
                                 VALUES (
                                     %(guild_id)s,
                                     %(channel_id)s,
                                     %(author_id)s,
                                     %(target_id)s,
-                                    %(emoji)s)
+                                    %(emoji)s,
+                                    %(remaining)s
+                                    )
                                 ON DUPLICATE KEY UPDATE
                                     emoji = %(emoji)s,
                                     channel_id = %(channel_id)s
                                """,
                            {"guild_id": guild_id, "channel_id": channel_id, "author_id": author_id,
-                            "target_id": target_id, "emoji": emoji})
+                            "target_id": target_id, "emoji": emoji, "remaining": shots})
 
             return cursor.rowcount > 0
 
@@ -153,3 +156,52 @@ class DbAutoReaction:
                            {"guild_id": guild_id, "channel_id": channel_id, "user_id": user_id})
 
             return [i[0] for i in cursor.fetchall()]
+
+    @staticmethod
+    def use_auto_reactions(guild_id: int, user_id: int, channel_id: int = None) -> List[str]:
+        with DatabaseConnection() as cursor:
+            cursor.execute("""
+                                SELECT
+                                    emoji
+                                FROM
+                                    auto_reaction
+                                WHERE
+                                    guild_id = %(guild_id)s
+                                AND
+                                    target_id = %(user_id)s
+                                AND
+                                    channel_id = %(channel_id)s
+                                """,
+                           {"guild_id": guild_id, "channel_id": channel_id, "user_id": user_id})
+
+            reactions = [i[0] for i in cursor.fetchall()]
+
+            cursor.execute("""
+                                UPDATE
+                                    auto_reaction
+                                SET
+                                    remaining = remaining - 1
+                                WHERE
+                                    guild_id=%(guild_id)s
+                                AND
+                                    target_id = %(user_id)s
+                                AND
+                                    channel_id = %(channel_id)s
+                                """,
+                           {"guild_id": guild_id, "channel_id": channel_id, "user_id": user_id})
+
+            cursor.execute("""
+                                DELETE FROM
+                                    auto_reaction
+                                WHERE
+                                    remaining = 0
+                                AND
+                                    guild_id=%(guild_id)s
+                                AND
+                                    target_id = %(user_id)s
+                                AND
+                                    channel_id = %(channel_id)s
+                                """,
+                           {"guild_id": guild_id, "channel_id": channel_id, "user_id": user_id})
+
+            return reactions
