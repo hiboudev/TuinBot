@@ -45,6 +45,27 @@ class DbMemo:
             return cursor.rowcount > 0
 
     @staticmethod
+    def get_memo_name(author_id: int, name_part: str) -> Union[str, None]:
+        with DatabaseConnection() as cursor:
+            cursor.execute(f"""
+                                SELECT
+                                    name
+                                FROM
+                                    memo
+                                WHERE
+                                    author_id=%(author_id)s
+                                AND
+                                    name LIKE %(name_part)s
+                                ORDER BY
+                                    name
+                                LIMIT 1
+                                """,
+                           {"author_id": author_id, "name_part": name_part + "%"})
+
+            result = cursor.fetchone()
+            return result[0] if result else None
+
+    @staticmethod
     def get_memo(author_id: int, name_part: str, exact_name: bool = False) -> Union[Memo, None]:
         name_operator = "=" if exact_name else "LIKE"
 
@@ -106,6 +127,7 @@ class DbMemo:
                                             author_id = %(author_id)s
                                         AND
                                             name LIKE %(name)s
+                                        LIMIT 1
                                     ),
                                     %(content)s)
                                 """,
@@ -128,7 +150,7 @@ class DbMemo:
                                     memo_line
                                 WHERE
                                     memo_id
-                                        IN  (
+                                        =  (
                                                 SELECT
                                                     id
                                                 FROM
@@ -137,6 +159,7 @@ class DbMemo:
                                                     author_id = %(author_id)s
                                                 AND
                                                     name LIKE %(name_part)s
+                                                LIMIT 1
                                             )
                                 ORDER BY
                                     id
@@ -248,7 +271,7 @@ class DbMemo:
                                         memo_line
                                     WHERE
                                         memo_id
-                                            IN  (
+                                            =  (
                                                     SELECT
                                                         id
                                                     FROM
@@ -257,6 +280,7 @@ class DbMemo:
                                                         author_id = %(author_id)s
                                                     AND
                                                         name {name_operator} %(name_part)s
+                                                    LIMIT 1
                                                 )
                                 """,
                            {"author_id": author_id,

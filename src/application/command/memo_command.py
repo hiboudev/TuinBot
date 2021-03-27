@@ -151,17 +151,17 @@ class MemoCommand(BaseCommand):
     @classmethod
     def _get_memo_line(cls, message: Message, name_executor: TextParamExecutor, line_executor: FixedValueParamExecutor,
                        int_executor: IntParamExecutor):
-        # Just to display a better error message
-        line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text())
-        if line_count == 0:
+        # memo_name and line_count : just to display a better error message
+        memo_name = DbMemo.get_memo_name(message.author.id, name_executor.get_text())
+        if not memo_name:
             cls._display_error(message, "Aucun mémo trouvé commençant par `{}`.".format(name_executor.get_text()))
             return
 
+        line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text())
+
         if line_count < int_executor.get_int():
-            # TODO on veut afficher le nom complet du mémo, par le morceau tapé par le user
-            cls._display_error(message,
-                               "Le mémo [**{}**] n'a que `{}` ligne(s).".format(name_executor.get_text(),
-                                                                                line_count))
+            cls._reply(message,
+                       "Le mémo [**{}**] n'a que `{}` ligne(s).".format(memo_name, line_count))
             return
 
         memo_line = DbMemo.get_memo_line(message.author.id, name_executor.get_text(), int_executor.get_int())
