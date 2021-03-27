@@ -138,16 +138,12 @@ class AutoSpoilerCommand(BaseCommand):
 
     @staticmethod
     async def _execute_hook_async(message: Message, author_id: int):
-        extracts = ParsingUtils.extract_links(message.content)
-
-        user_message = "**" + extracts.message + "**" if extracts.message else ""
+        user_message = ParsingUtils.format_links(message.content.replace("|", r"\|"))
         description = ("Le tuin **{username}** a une déclaration à faire ! :partying_face:\n\n"
                        ":point_right: \u00A0\u00A0\u00A0\u00A0"
-                       "||\u00A0\u00A0{user_message}\u00A0\u00A0{message_links_sep}{links}||"
+                       "||\u00A0\u00A0{user_message}||"
                        ).format(username=message.author.display_name,
-                                user_message=user_message,
-                                message_links_sep="\n" if extracts.message and extracts.links else "",
-                                links="\n".join(extracts.links)
+                                user_message=user_message
                                 )
 
         embed = AppMessages.get_hook_embed(

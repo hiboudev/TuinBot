@@ -8,7 +8,6 @@ from application.param.app_params import ApplicationParams
 from core.command.base import BaseCommand
 from core.command.types import HookType
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
-from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
 
@@ -68,7 +67,7 @@ class TypingMessageCommand(BaseCommand):
             )
             return
 
-        content = ParsingUtils.to_single_line(text_executor.get_text())
+        content = ParsingUtils.format_links(ParsingUtils.to_single_line(text_executor.get_text()))
 
         if cls._execute_db_bool_request(lambda:
                                         DbTypingMessage.add_typing_message(message.guild.id,

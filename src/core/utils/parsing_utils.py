@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 
 from discord import User, Client
 from emoji import emoji_lis
@@ -17,6 +17,7 @@ class LinkExtract:
 
 class ParsingUtils:
     _link_reg_ex = re.compile(r"(http[s]?://[^\s]+)")
+    _link_reg_ex_with_spaces = re.compile(r"\s*http[s]?://[^\s]+\s*")
     _emoji_reg_ex = re.compile(r"^(?P<emoji_string><:(?P<name>[^:]+):(?P<id>\d+)>)")
 
     @staticmethod
@@ -114,16 +115,36 @@ class ParsingUtils:
 
     # TODO à partir de là ça devrait passer dans le package application
 
-    @classmethod
-    def extract_links(cls, text: str) -> LinkExtract:
-        links = cls._link_reg_ex.findall(text)
-        message = cls._link_reg_ex.sub("", text)
-
-        return LinkExtract(message, links)
+    # @classmethod
+    # def extract_links(cls, text: str) -> LinkExtract:
+    #     links = cls._link_reg_ex.findall(text)
+    #     message = cls._link_reg_ex.sub("", text)
+    #
+    #     return LinkExtract(message, links)
 
     @classmethod
     def format_links(cls, text: str) -> str:
-        return cls._link_reg_ex.sub(r"\n\g<1>\n", text)
+        text = text.replace("*", r"\*")
+        search_index = 0
+        new_text = ""
+        match = cls._link_reg_ex_with_spaces.search(text, pos=search_index)
+
+        while match:
+            if match.start() > search_index:
+                new_text += f"**{text[search_index:match.start()]}**"
+            new_text += text[match.start():match.end()]
+
+            search_index = match.end()
+            match = cls._link_reg_ex_with_spaces.search(text, pos=search_index)
+
+        if search_index < len(text):
+            new_text += f"**{text[search_index:]}**"
+
+        return new_text
+
+    # @classmethod
+    # def format_links(cls, text: str) -> str:
+    #     return cls._link_reg_ex.sub(r"\n\g<1>\n", text)
 
     @classmethod
     def is_unique_link(cls, text: str) -> bool:

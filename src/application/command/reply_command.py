@@ -64,7 +64,7 @@ class ReplyMessageCommand(BaseCommand):
             )
             return
 
-        content = ParsingUtils.to_single_line(text_executor.get_text())
+        content = ParsingUtils.format_links(ParsingUtils.to_single_line(text_executor.get_text()))
 
         if cls._execute_db_bool_request(lambda:
                                         DbAutoReply.add_auto_reply(message.guild.id,
