@@ -56,8 +56,8 @@ class AppMessages:
         return embed
 
     @classmethod
-    def get_memo_line_embed(cls, content: str) -> Embed:
+    def get_memo_line_embed(cls, content: str, footer:str) -> Embed:
         embed = Embed(description=content,
-                      color=cls._MEMO_EMBED_COLOR)
+                      color=cls._MEMO_EMBED_COLOR).set_footer(text=footer)
 
         return embed

@@ -170,7 +170,14 @@ class MemoCommand(BaseCommand):
             cls._display_error(message, "Je n'ai rien trouvé.")
             return
 
-        cls._reply(message, AppMessages.get_memo_line_embed(memo_line), -1)
+        # Put text in bold if not containing *
+        if "*" not in memo_line:
+            memo_line = f"**{memo_line}**"
+
+        cls._async(
+            message.channel.send(
+                embed=AppMessages.get_memo_line_embed(memo_line, f"Mémo de {message.author.display_name}")))
+        cls._async(message.delete(delay=cls._delete_delay))
 
     # noinspection PyUnusedLocal
     @classmethod
