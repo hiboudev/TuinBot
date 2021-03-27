@@ -1,6 +1,6 @@
 from typing import List
 
-from discord import Message
+from discord import Message, User
 
 from application.database.db_reaction import DbAutoReaction
 from application.param.app_params import ApplicationParams
@@ -126,7 +126,14 @@ class AutoReactionCommand(BaseCommand):
                                                                                    user_executor.get_user().id)
             channel_reaction_part = f" ({channel_reaction_count} dans ce salon)"
 
-        reactions_part = " : %s" % " ".join(total_reactions) if total_reactions else ""
+        reactions_string = []
+        for reaction in total_reactions:
+            user: User = message.guild.get_member(reaction.author_id)
+            user_name = user.display_name.replace("`", "'")
+            user_part = f"`{user_name}`" if user else ""
+            reactions_string.append(f"{reaction.emoji} {user_part}")
+
+        reactions_part = " : %s" % " ".join(reactions_string) if total_reactions else ""
 
         cls._reply(message,
                    "**%s** a %s réaction(s)%s%s" % (user_executor.get_user().display_name,

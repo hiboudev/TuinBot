@@ -1,6 +1,13 @@
+from dataclasses import dataclass
 from typing import List
 
 from application.database.db_connexion import DatabaseConnection
+
+
+@dataclass
+class AutoReac:
+    emoji: str
+    author_id: str
 
 
 class DbAutoReaction:
@@ -133,10 +140,11 @@ class DbAutoReaction:
             return cursor.rowcount > 0
 
     @staticmethod
-    def get_auto_reactions(guild_id: int, user_id: int, channel_id: int = None) -> List[str]:
+    def get_auto_reactions(guild_id: int, user_id: int, channel_id: int = None) -> List[AutoReac]:
         sql = """
                                 SELECT
-                                    emoji
+                                    emoji,
+                                    author_id
                                 FROM
                                     auto_reaction
                                 WHERE
@@ -155,7 +163,7 @@ class DbAutoReaction:
             cursor.execute(sql,
                            {"guild_id": guild_id, "channel_id": channel_id, "user_id": user_id})
 
-            return [i[0] for i in cursor.fetchall()]
+            return [AutoReac(i[0], i[1]) for i in cursor.fetchall()]
 
     @staticmethod
     def use_auto_reactions(guild_id: int, user_id: int, channel_id: int = None) -> List[str]:
