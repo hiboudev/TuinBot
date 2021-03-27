@@ -187,14 +187,16 @@ class MemoCommand(BaseCommand):
                           line_executor: FixedValueParamExecutor,
                           int_executor: IntParamExecutor, delete_executor: FixedValueParamExecutor):
         # Just to display a better error message
-        line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text(), True)
-        if line_count == 0:
+        memo_name = DbMemo.get_memo_name(message.author.id, name_executor.get_text())
+        if not memo_name:
             cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
             return
 
+        line_count = DbMemo.count_memo_lines(message.author.id, name_executor.get_text(), True)
+
         if line_count < int_executor.get_int():
             cls._display_error(message,
-                               "Le mémo [**{}**] n'a que `{}` ligne(s).".format(name_executor.get_text(),
+                               "Le mémo [**{}**] n'a que `{}` ligne(s).".format(memo_name,
                                                                                 line_count))
             return
 
@@ -202,15 +204,19 @@ class MemoCommand(BaseCommand):
                 lambda: DbMemo.remove_memo_line(message.author.id, name_executor.get_text(), int_executor.get_int()),
                 message):
             cls._reply(message,
-                       f"Ligne `{int_executor.get_int()}` supprimée du mémo [**{name_executor.get_text()}**] !")
+                       f"Ligne `{int_executor.get_int()}` supprimée du mémo [**{memo_name}**] !")
 
     # noinspection PyUnusedLocal
     @classmethod
     def _remove_memo(cls, message: Message, name_executor: TextParamExecutor, delete_executor: FixedValueParamExecutor):
-        if DbMemo.remove_memo(message.author.id, name_executor.get_text()):
-            cls._reply(message, "Mémo [**{}**] supprimé !".format(name_executor.get_text()))
-        else:
+        # Just to display a better message
+        memo_name = DbMemo.get_memo_name(message.author.id, name_executor.get_text())
+        if not memo_name:
             cls._display_error(message, "Aucun mémo trouvé avec le nom `{}`.".format(name_executor.get_text()))
+            return
+
+        if DbMemo.remove_memo(message.author.id, name_executor.get_text()):
+            cls._reply(message, "Mémo [**{}**] supprimé !".format(memo_name))
 
     # noinspection PyUnusedLocal
     @classmethod
