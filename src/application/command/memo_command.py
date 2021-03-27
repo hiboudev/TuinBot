@@ -18,6 +18,8 @@ class MemoCommand(BaseCommand):
     _MAX_LINES = 10
     _MAX_CHARS = 1000
 
+    _DELETE_DELAY = 20
+
     @staticmethod
     def name() -> str:
         return "memo"
@@ -117,7 +119,7 @@ class MemoCommand(BaseCommand):
                              for line_count, line in enumerate(memo.lines)
                              ])
 
-        cls._reply(message, AppMessages.get_memo_embed(memo.name, content), 20)
+        cls._reply(message, AppMessages.get_memo_embed(memo.name, content), cls._DELETE_DELAY)
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -235,6 +237,6 @@ class MemoCommand(BaseCommand):
                                                   "\u00A0\u0020\u00A0".join(memo_list_str),
                                                   "{} / {}".format(len(memos), cls._MAX_PER_USER)
                                                   ),
-                       20
+                       cls._DELETE_DELAY
                        )
         # \u00A0\u0020\u00A0 : 2 unbreakable spaces to keep margin, and 1 normal space to wrap line between 2 titles
