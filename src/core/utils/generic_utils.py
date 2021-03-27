@@ -1,4 +1,4 @@
-from typing import Type, get_args, Union, get_origin
+from typing import get_args, Union, get_origin
 
 
 class GenericUtils:

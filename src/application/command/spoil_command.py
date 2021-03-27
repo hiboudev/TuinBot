@@ -10,6 +10,7 @@ from core.command.types import HookType
 from core.executor.executors import UserParamExecutor, FixedValueParamExecutor
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
+from core.utils.sanitizer import Sanitizer
 
 
 class AutoSpoilerCommand(BaseCommand):
@@ -58,10 +59,12 @@ class AutoSpoilerCommand(BaseCommand):
                                           user_executor.get_user().id
                                           ):
             cls._reply(message,
-                       "Spoiler ajouté au prochain message de **{}** !".format(user_executor.get_user().display_name))
+                       "Spoiler ajouté au prochain message de **{}** !".format(
+                           Sanitizer.user_name(user_executor.get_user().display_name)))
         else:
             cls._reply(message,
-                       "Un spoiler est déjà mis sur **{}**.".format(user_executor.get_user().display_name))
+                       "Un spoiler est déjà mis sur **{}**.".format(
+                           Sanitizer.user_name(user_executor.get_user().display_name)))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -73,7 +76,8 @@ class AutoSpoilerCommand(BaseCommand):
                                                                           user_executor.get_user().id
                                                                           ),
                                         message):
-            cls._reply(message, "Spoiler retiré de **{}** !".format(user_executor.get_user().display_name))
+            cls._reply(message,
+                       "Spoiler retiré de **{}** !".format(Sanitizer.user_name(user_executor.get_user().display_name)))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -82,7 +86,8 @@ class AutoSpoilerCommand(BaseCommand):
         author_id = DbAutoSpoiler.get_auto_spoiler_author(message.guild.id, user_executor.get_user().id)
 
         if author_id is None:
-            cls._reply(message, "Aucun spoiler sur **{}** !".format(user_executor.get_user().display_name))
+            cls._reply(message,
+                       "Aucun spoiler sur **{}** !".format(Sanitizer.user_name(user_executor.get_user().display_name)))
         else:
             user: User = message.guild.get_member(author_id)
 
@@ -90,8 +95,9 @@ class AutoSpoilerCommand(BaseCommand):
                 cls._reply(message, "Oups ! Il semble qu'il y ait eu un soucis pour retrouver le tuin !")
             else:
                 cls._reply(message,
-                           "**{}** a mis un spoiler sur **{}** !".format(user.display_name,
-                                                                         user_executor.get_user().display_name))
+                           "**{}** a mis un spoiler sur **{}** !".format(Sanitizer.user_name(user.display_name),
+                                                                         Sanitizer.user_name(
+                                                                             user_executor.get_user().display_name)))
 
     @staticmethod
     def has_hook() -> bool:
@@ -142,7 +148,7 @@ class AutoSpoilerCommand(BaseCommand):
         description = ("Le tuin **{username}** a une déclaration à faire ! :partying_face:\n\n"
                        ":point_right: \u00A0\u00A0\u00A0\u00A0"
                        "||\u00A0\u00A0{user_message}||"
-                       ).format(username=message.author.display_name,
+                       ).format(username=Sanitizer.user_name(message.author.display_name),
                                 user_message=user_message
                                 )
 

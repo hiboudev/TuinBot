@@ -36,6 +36,7 @@ class AppMessages:
     @classmethod
     def get_recorded_message_embed(cls, content: str, target_id: int,
                                    author_name: str = None) -> Embed:
+        """author_name must NOT be sanitized (cause in footer)"""
         description = f"{content} <@{target_id}>"
 
         embed = cls.get_hook_embed(description=description)

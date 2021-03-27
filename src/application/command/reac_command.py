@@ -9,11 +9,12 @@ from core.command.types import HookType
 from core.executor.executors import UserParamExecutor, EmojiParamExecutor, FixedValueParamExecutor
 from core.param.params import CommandParam, ParamType
 from core.param.syntax import CommandSyntax
+from core.utils.sanitizer import Sanitizer
 
 
 class AutoReactionCommand(BaseCommand):
     _MAX_REACTION_PER_TARGET = 6
-    _SHOTS = 5
+    _SHOTS = 10
 
     @staticmethod
     def name() -> str:
@@ -68,7 +69,7 @@ class AutoReactionCommand(BaseCommand):
         if reaction_count >= cls._MAX_REACTION_PER_TARGET:
             cls._reply(message,
                        "Le tuin **{}** a déjà {} réactions sur lui, laissons-le respirer un peu.".format(
-                           user_executor.get_user().display_name, reaction_count)
+                           Sanitizer.user_name(user_executor.get_user().display_name), reaction_count)
                        )
             return
 
@@ -79,7 +80,7 @@ class AutoReactionCommand(BaseCommand):
                                           emoji_executor.get_emoji()):
             cls._reply(message,
                        "Cet emoji est déjà mis sur **%s** dans ce salon, il faudrait en choisir un autre." % (
-                           user_executor.get_user().display_name))
+                           Sanitizer.user_name(user_executor.get_user().display_name)))
             return
 
         if cls._execute_db_bool_request(lambda:
@@ -92,7 +93,7 @@ class AutoReactionCommand(BaseCommand):
                                         message):
             cls._reply(message,
                        "Réaction %s ajoutée à **%s** !" % (
-                           emoji_executor.get_emoji(), user_executor.get_user().display_name))
+                           emoji_executor.get_emoji(), Sanitizer.user_name(user_executor.get_user().display_name)))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -103,7 +104,8 @@ class AutoReactionCommand(BaseCommand):
                                                                             message.author.id,
                                                                             user_executor.get_user().id),
                                         message):
-            cls._reply(message, "Réaction retirée de **%s** !" % user_executor.get_user().display_name)
+            cls._reply(message,
+                       "Réaction retirée de **%s** !" % Sanitizer.user_name(user_executor.get_user().display_name))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -129,14 +131,14 @@ class AutoReactionCommand(BaseCommand):
         reactions_string = []
         for reaction in total_reactions:
             user: User = message.guild.get_member(reaction.author_id)
-            user_name = user.display_name.replace("`", "'")
+            user_name = Sanitizer.user_name_special_quotes(user.display_name)
             user_part = f"`{user_name}`" if user else ""
             reactions_string.append(f"{reaction.emoji} {user_part}")
 
         reactions_part = " : %s" % " ".join(reactions_string) if total_reactions else ""
 
         cls._reply(message,
-                   "**%s** a %s réaction(s)%s%s" % (user_executor.get_user().display_name,
+                   "**%s** a %s réaction(s)%s%s" % (Sanitizer.user_name(user_executor.get_user().display_name),
                                                     len(total_reactions),
                                                     channel_reaction_part,
                                                     reactions_part

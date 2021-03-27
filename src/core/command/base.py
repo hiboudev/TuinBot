@@ -159,6 +159,13 @@ class BaseCommand(Command, ABC):
     def _async(coro: Coroutine):
         asyncio.create_task(coro)
 
+    # @classmethod
+    # def _send(cls, channel:TextChannel, content:[Embed, str]):
+    #     asyncio.create_task(cls.__send_async(channel,content))
+
+    # @staticmethod
+    # async def __send_async(channel:TextChannel, content:[Embed, str]):
+
     @classmethod
     def get_help(cls) -> Union[Embed, str]:
         return Messages.build_help(cls)

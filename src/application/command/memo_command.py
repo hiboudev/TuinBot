@@ -10,6 +10,7 @@ from core.executor.executors import TextParamExecutor, FixedValueParamExecutor, 
 from core.param.params import CommandParam, ParamType, TextMinMaxParamConfig, NumberMinMaxParamConfig
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
+from core.utils.sanitizer import Sanitizer
 
 
 class MemoCommand(BaseCommand):
@@ -176,7 +177,8 @@ class MemoCommand(BaseCommand):
 
         cls._async(
             message.channel.send(
-                embed=AppMessages.get_memo_line_embed(memo_line, f"Mémo de {message.author.display_name}")))
+                embed=AppMessages.get_memo_line_embed(memo_line,
+                                                      f"Mémo de {message.author.display_name}")))
         cls._async(message.delete(delay=cls._delete_delay))
 
     # noinspection PyUnusedLocal

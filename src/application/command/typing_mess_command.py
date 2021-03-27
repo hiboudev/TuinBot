@@ -10,6 +10,7 @@ from core.command.types import HookType
 from core.executor.executors import TextParamExecutor, UserParamExecutor, FixedValueParamExecutor
 from core.param.syntax import CommandSyntax
 from core.utils.parsing_utils import ParsingUtils
+from core.utils.sanitizer import Sanitizer
 
 
 class TypingMessageCommand(BaseCommand):
@@ -63,7 +64,7 @@ class TypingMessageCommand(BaseCommand):
             cls._reply(
                 message,
                 "Oups, il y a déjà {} message(s) enregistré(s) pour **{}**, il va falloir attendre ton tour !".format(
-                    typing_count, user_executor.get_user().display_name)
+                    typing_count, Sanitizer.user_name(user_executor.get_user().display_name))
             )
             return
 
@@ -78,7 +79,7 @@ class TypingMessageCommand(BaseCommand):
                                                                            ),
                                         message):
             cls._reply(message,
-                       "Message enregistré pour **%s** !" % user_executor.get_user().display_name)
+                       "Message enregistré pour **%s** !" % Sanitizer.user_name(user_executor.get_user().display_name))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -91,7 +92,7 @@ class TypingMessageCommand(BaseCommand):
                                                                               ),
                                         message):
             cls._reply(message,
-                       "Message pour **%s** effacé !" % user_executor.get_user().display_name)
+                       "Message pour **%s** effacé !" % Sanitizer.user_name(user_executor.get_user().display_name))
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -101,11 +102,13 @@ class TypingMessageCommand(BaseCommand):
                                                               user_executor.get_user().id)
 
         if not sentence:
-            cls._reply(message, "Aucun message enregistré pour **{}** !".format(user_executor.get_user().display_name))
+            cls._reply(message, "Aucun message enregistré pour **{}** !".format(
+                Sanitizer.user_name(user_executor.get_user().display_name)))
         else:
             cls._reply(message,
-                       "Message enregistré pour **{}** : {}".format(user_executor.get_user().display_name,
-                                                                    sentence)
+                       "Message enregistré pour **{}** : {}".format(
+                           Sanitizer.user_name(user_executor.get_user().display_name),
+                           sentence)
                        )
 
     @staticmethod
